@@ -31,6 +31,11 @@ id = "3e51f6a6f1d74faba45288bcfea36f2e"
 binding = "LOGS"
 id = "ae652fa92c7944589801b618a4310ab0"
 
+[[d1_databases]]
+binding = "DB"
+database_name = "silk-gateway-logs"
+database_id = "83b49dac-fcea-4b28-818b-994f093d6831"
+
 # 环境变量（敏感信息不要写在这里，用 wrangler secret put）
 # [vars]
 # DEFAULT_PROVIDER = "volcengine"

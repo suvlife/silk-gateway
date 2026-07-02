@@ -644,106 +644,101 @@ export default {
 };
 
 // ============================================================
-// 监控和日志
+// 监控和日志 (D1 版本)
 // ============================================================
 
 async function logRequest(env, request, response, startTime) {
   const duration = Date.now() - startTime;
   const url = new URL(request.url);
   
-  const logEntry = {
-    timestamp: new Date().toISOString(),
-    method: request.method,
-    path: url.pathname,
-    status: response.status,
-    duration,
-    userAgent: request.headers.get('User-Agent')?.slice(0, 100),
-    country: request.headers.get('CF-IPCountry'),
-    ip: request.headers.get('CF-Connecting-IP'),
-  };
-  
-  // 存储到 KV（保留最近 1000 条日志）
-  const logKey = `log:${Date.now()}:${Math.random().toString(36).slice(2, 6)}`;
-  await env.LOGS.put(logKey, JSON.stringify(logEntry), { expirationTtl: 86400 }); // 24小时过期
-  
-  // 错误日志单独记录
-  if (response.status >= 400) {
-    const errorKey = `error:${Date.now()}:${Math.random().toString(36).slice(2, 6)}`;
-    await env.LOGS.put(errorKey, JSON.stringify({
-      ...logEntry,
-      type: 'error',
-    }), { expirationTtl: 86400 * 7 }); // 错误保留7天
+  try {
+    await env.DB.prepare(`
+      INSERT INTO request_logs (timestamp, method, path, status, duration, user_agent, country, ip)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      new Date().toISOString(),
+      request.method,
+      url.pathname,
+      response.status,
+      duration,
+      request.headers.get('User-Agent')?.slice(0, 100) || '',
+      request.headers.get('CF-IPCountry') || '',
+      request.headers.get('CF-Connecting-IP') || ''
+    ).run();
+  } catch (err) {
+    console.error('D1 log error:', err);
   }
-  
-  return logEntry;
 }
 
 async function getLogs(env, type = 'all', limit = 50) {
-  const prefix = type === 'error' ? 'error:' : 'log:';
-  const keys = await env.LOGS.list({ prefix, limit });
-  
-  const logs = [];
-  for (const key of keys.keys) {
-    const data = await env.LOGS.get(key.name, { type: 'json' });
-    if (data) logs.push(data);
+  let query = 'SELECT * FROM request_logs';
+  if (type === 'error') {
+    query += ' WHERE status >= 400';
   }
+  query += ' ORDER BY timestamp DESC LIMIT ?';
   
-  return logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  const { results } = await env.DB.prepare(query).bind(limit).all();
+  return results || [];
 }
 
 async function getStats(env) {
-  const now = new Date();
-  const today = now.toISOString().slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10);
   
-  // 获取今日日志
-  const logs = await getLogs(env, 'all', 500);
-  const todayLogs = logs.filter(l => l.timestamp.startsWith(today));
-  const errors = logs.filter(l => l.type === 'error');
+  // 今日总请求数
+  const { count: totalRequests } = await env.DB.prepare(
+    'SELECT COUNT(*) as count FROM request_logs WHERE timestamp >= ?'
+  ).bind(today + 'T00:00:00').first();
   
-  const totalRequests = todayLogs.length;
-  const totalErrors = errors.length;
-  const avgDuration = todayLogs.length > 0
-    ? Math.round(todayLogs.reduce((sum, l) => sum + l.duration, 0) / todayLogs.length)
-    : 0;
+  // 今日错误数
+  const { count: totalErrors } = await env.DB.prepare(
+    'SELECT COUNT(*) as count FROM request_logs WHERE timestamp >= ? AND status >= 400'
+  ).bind(today + 'T00:00:00').first();
   
-  // 路径统计
-  const pathStats = {};
-  todayLogs.forEach(l => {
-    if (!pathStats[l.path]) pathStats[l.path] = { count: 0, errors: 0 };
-    pathStats[l.path].count++;
-    if (l.status >= 400) pathStats[l.path].errors++;
-  });
+  // 平均延迟
+  const { avg_duration } = await env.DB.prepare(
+    'SELECT AVG(duration) as avg_duration FROM request_logs WHERE timestamp >= ?'
+  ).bind(today + 'T00:00:00').first();
+  
+  // Top 路径
+  const { results: topPaths } = await env.DB.prepare(`
+    SELECT path, COUNT(*) as count, SUM(CASE WHEN status >= 400 THEN 1 ELSE 0 END) as errors
+    FROM request_logs WHERE timestamp >= ?
+    GROUP BY path ORDER BY count DESC LIMIT 10
+  `).bind(today + 'T00:00:00').all();
   
   // 状态码分布
+  const { results: statusRows } = await env.DB.prepare(`
+    SELECT 
+      CASE 
+        WHEN status BETWEEN 200 AND 299 THEN '2xx'
+        WHEN status BETWEEN 300 AND 399 THEN '3xx'
+        WHEN status BETWEEN 400 AND 499 THEN '4xx'
+        WHEN status BETWEEN 500 AND 599 THEN '5xx'
+        ELSE 'other'
+      END as code_group,
+      COUNT(*) as count
+    FROM request_logs WHERE timestamp >= ?
+    GROUP BY code_group
+  `).bind(today + 'T00:00:00').all();
+  
   const statusCodes = {};
-  todayLogs.forEach(l => {
-    const code = Math.floor(l.status / 100) + 'xx';
-    statusCodes[code] = (statusCodes[code] || 0) + 1;
-  });
+  (statusRows || []).forEach(r => { statusCodes[r.code_group] = r.count; });
+  
+  // 国家统计
+  const { results: countryRows } = await env.DB.prepare(`
+    SELECT country, COUNT(*) as count
+    FROM request_logs WHERE timestamp >= ?
+    GROUP BY country ORDER BY count DESC LIMIT 10
+  `).bind(today + 'T00:00:00').all();
   
   return {
     date: today,
-    totalRequests,
-    totalErrors,
+    totalRequests: totalRequests || 0,
+    totalErrors: totalErrors || 0,
     errorRate: totalRequests > 0 ? ((totalErrors / totalRequests) * 100).toFixed(2) + '%' : '0%',
-    avgDuration: avgDuration + 'ms',
-    topPaths: Object.entries(pathStats)
-      .sort((a, b) => b[1].count - a[1].count)
-      .slice(0, 10)
-      .map(([path, stats]) => ({ path, ...stats })),
+    avgDuration: Math.round(avg_duration || 0) + 'ms',
+    topPaths: (topPaths || []).map(p => ({ path: p.path, count: p.count, errors: p.errors })),
     statusCodes,
-    countryStats: getCountryStats(todayLogs),
+    countryStats: (countryRows || []).map(c => ({ country: c.country || 'Unknown', count: c.count })),
   };
-}
-
-function getCountryStats(logs) {
-  const countries = {};
-  logs.forEach(l => {
-    const country = l.country || 'Unknown';
-    countries[country] = (countries[country] || 0) + 1;
-  });
-  return Object.entries(countries)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([country, count]) => ({ country, count }));
 }

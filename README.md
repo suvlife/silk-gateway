@@ -26,6 +26,8 @@ Cloudflare 边缘节点 (全球 300+)
 Workers API 中转 (鉴权/限流/路由)
     ↓
 中国大模型 API (DeepSeek/Volcengine/MiMo)
+    ↓
+D1 数据库 (日志/统计) + KV (用户数据/限流)
 ```
 
 ## 目录结构
@@ -57,18 +59,50 @@ npm install -g wrangler
 wrangler login
 ```
 
-### 2. 创建 KV 命名空间
+### 2. 创建存储资源
 
 ```bash
+# KV 命名空间
 wrangler kv namespace create API_KEYS
 wrangler kv namespace create RATE_LIMIT_KV
 wrangler kv namespace create USAGE_LOG
 wrangler kv namespace create LOGS
+
+# D1 数据库 (日志)
+wrangler d1 create silk-gateway-logs
 ```
 
 将输出的 ID 填入 `wrangler.toml`。
 
-### 3. 设置 API Key
+### 3. 创建数据库表
+
+```bash
+wrangler d1 execute silk-gateway-logs --remote --command "
+CREATE TABLE IF NOT EXISTS request_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  timestamp TEXT NOT NULL,
+  method TEXT NOT NULL,
+  path TEXT NOT NULL,
+  status INTEGER NOT NULL,
+  duration INTEGER NOT NULL,
+  user_agent TEXT,
+  country TEXT,
+  ip TEXT,
+  api_key TEXT,
+  model TEXT,
+  prompt_tokens INTEGER DEFAULT 0,
+  completion_tokens INTEGER DEFAULT 0,
+  cost REAL DEFAULT 0,
+  error_message TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_timestamp ON request_logs(timestamp);
+CREATE INDEX IF NOT EXISTS idx_country ON request_logs(country);
+CREATE INDEX IF NOT EXISTS idx_path ON request_logs(path);
+"
+```
+
+### 4. 设置 API Key
 
 ```bash
 wrangler secret put VOLCENGINE_API_KEY
@@ -77,7 +111,7 @@ wrangler secret put KIMI_API_KEY
 wrangler secret put MIMO_API_KEY
 ```
 
-### 4. 部署
+### 5. 部署
 
 ```bash
 # 部署 Workers
@@ -87,7 +121,7 @@ wrangler deploy
 wrangler pages deploy . --project-name=silk-gateway-site
 ```
 
-### 5. 绑定自定义域名
+### 6. 绑定自定义域名
 
 在 Cloudflare Dashboard 中：
 - 添加 `api.silkgateway.ai` 指向 Workers
@@ -154,6 +188,26 @@ curl https://api.silkgateway.ai/v1/balance \
 - 状态码分布
 - 国家来源统计
 - 请求日志
+
+### D1 日志查询
+
+```bash
+# 今日请求数
+wrangler d1 execute silk-gateway-logs --remote \
+  --command "SELECT COUNT(*) as count FROM request_logs WHERE timestamp >= '2026-07-02'"
+
+# 按国家统计
+wrangler d1 execute silk-gateway-logs --remote \
+  --command "SELECT country, COUNT(*) as count FROM request_logs GROUP BY country ORDER BY count DESC"
+
+# 查询慢请求 (>1秒)
+wrangler d1 execute silk-gateway-logs --remote \
+  --command "SELECT * FROM request_logs WHERE duration > 1000 ORDER BY duration DESC LIMIT 10"
+
+# 按模型统计 Token 消耗
+wrangler d1 execute silk-gateway-logs --remote \
+  --command "SELECT model, SUM(prompt_tokens) as input, SUM(completion_tokens) as output FROM request_logs WHERE model IS NOT NULL GROUP BY model"
+```
 
 ## 环境变量
 
