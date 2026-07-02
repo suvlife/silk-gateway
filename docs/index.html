@@ -4,6 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>API Documentation - SilkGateway</title>
+  <meta name="description" content="SilkGateway API documentation. Learn how to integrate China's top AI models with OpenAI-compatible endpoints. Streaming, billing, and model reference.">
+  <meta name="keywords" content="AI API documentation, DeepSeek API, Volcengine API, Xiaomi MiMo API, OpenAI compatible, streaming API, developer docs">
+  <meta name="author" content="SilkGateway">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="API Documentation - SilkGateway">
+  <meta property="og:description" content="Learn how to integrate China's top AI models with OpenAI-compatible endpoints.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://silkgateway.ai/docs/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="API Documentation - SilkGateway">
+  <meta name="twitter:description" content="Learn how to integrate China's top AI models with OpenAI-compatible endpoints.">
+  <link rel="canonical" href="https://silkgateway.ai/docs/">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -96,6 +108,12 @@
     .quick-start { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin: 24px 0; }
     .quick-start h3 { margin-top: 0; }
     
+    footer { padding: 24px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 13px; }
+    .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a { color: var(--text-secondary); text-decoration: none; }
+    .footer-links a:hover { color: var(--text); }
+    
     @media (max-width: 768px) {
       .layout { flex-direction: column; }
       .sidebar { width: 100%; position: static; }
@@ -111,9 +129,10 @@
       </a>
       <div class="nav-links">
         <a href="/">Home</a>
-        <a href="/docs/" class="active">Docs</a>
-        <a href="/dashboard/">Dashboard</a>
         <a href="/register/">Sign Up</a>
+        <a href="/dashboard/">Dashboard</a>
+        <a href="/admin/">Admin</a>
+        <a href="/docs/" class="active">Docs</a>
       </div>
     </div>
   </nav>
@@ -456,11 +475,18 @@ data: [DONE]
         </div>
       </section>
       
-      <div style="margin-top:60px;padding:24px 0;border-top:1px solid var(--border);text-align:center;color:var(--text-muted);font-size:13px">
-        <p>&copy; 2026 SilkGateway. All rights reserved.</p>
-        <p style="margin-top:8px"><a href="mailto:support@silkgateway.ai" style="color:var(--accent);text-decoration:none">support@silkgateway.ai</a></p>
-      </div>
     </main>
   </div>
+  
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-copy">&copy; 2026 SilkGateway. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="mailto:support@silkgateway.ai">support@silkgateway.ai</a>
+        <a href="/docs/">Documentation</a>
+        <a href="https://github.com/suvlife/silk-gateway">GitHub</a>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>

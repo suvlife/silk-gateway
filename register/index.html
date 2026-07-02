@@ -4,6 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Get API Key - SilkGateway</title>
+  <meta name="description" content="Create your SilkGateway API key and access China's top AI models including DeepSeek, Volcengine, and Xiaomi MiMo. Free tier available.">
+  <meta name="keywords" content="AI API, DeepSeek, Volcengine, Xiaomi MiMo, China AI models, API key, developer tools">
+  <meta name="author" content="SilkGateway">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Get API Key - SilkGateway">
+  <meta property="og:description" content="Create your SilkGateway API key and access China's top AI models.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://silkgateway.ai/register/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Get API Key - SilkGateway">
+  <meta name="twitter:description" content="Create your SilkGateway API key and access China's top AI models.">
+  <link rel="canonical" href="https://silkgateway.ai/register/">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -349,14 +361,14 @@
     /* Footer */
     footer {
       padding: 24px;
-      text-align: center;
       border-top: 1px solid var(--border);
       color: var(--text-muted);
       font-size: 13px;
     }
-    
-    footer a { color: var(--text-secondary); text-decoration: none; }
-    footer a:hover { color: var(--text); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a { color: var(--text-secondary); text-decoration: none; }
+    .footer-links a:hover { color: var(--text); }
     
     @media (max-width: 480px) {
       .form-row { grid-template-columns: 1fr; }
@@ -373,8 +385,10 @@
       </a>
       <div class="nav-links">
         <a href="/">Home</a>
-        <a href="/docs">Docs</a>
-        <a href="/pricing">Pricing</a>
+        <a href="/register/" class="active">Sign Up</a>
+        <a href="/dashboard/">Dashboard</a>
+        <a href="/admin/">Admin</a>
+        <a href="/docs/">Docs</a>
       </div>
     </div>
   </nav>
@@ -488,7 +502,14 @@
   </main>
   
   <footer>
-    <p>&copy; 2026 SilkGateway. All rights reserved. · <a href="/docs">Docs</a> · <a href="mailto:support@silkgateway.ai">Support</a></p>
+    <div class="footer-inner">
+      <div class="footer-copy">&copy; 2026 SilkGateway. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="mailto:support@silkgateway.ai">support@silkgateway.ai</a>
+        <a href="/docs/">Documentation</a>
+        <a href="https://github.com/suvlife/silk-gateway">GitHub</a>
+      </div>
+    </div>
   </footer>
   
   <script>

@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin - SilkGateway</title>
+  <meta name="description" content="SilkGateway system monitoring dashboard. View request logs, error rates, and geographic distribution.">
+  <meta name="keywords" content="API monitoring, system admin, request logs, SilkGateway, error tracking">
+  <meta name="author" content="SilkGateway">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="canonical" href="https://silkgateway.ai/admin/">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
@@ -88,6 +93,12 @@
     .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; border: none; background: var(--bg-input); color: var(--text); border: 1px solid var(--border); transition: all 0.2s; }
     .btn:hover { border-color: var(--accent); }
     
+    footer { padding: 24px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 13px; }
+    .footer-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a { color: var(--text-secondary); text-decoration: none; }
+    .footer-links a:hover { color: var(--text); }
+    
     @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } .grid-2, .grid-3 { grid-template-columns: 1fr; } }
     @media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
   </style>
@@ -100,8 +111,10 @@
         <div class="logo-text">Silk<span>Gateway</span></div>
       </a>
       <div class="nav-links">
-        <a href="/admin/" class="active">Admin</a>
+        <a href="/">Home</a>
+        <a href="/register/">Sign Up</a>
         <a href="/dashboard/">Dashboard</a>
+        <a href="/admin/" class="active">Admin</a>
         <a href="/docs/">Docs</a>
       </div>
     </div>
@@ -185,6 +198,17 @@
       </div>
     </div>
   </main>
+  
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-copy">&copy; 2026 SilkGateway. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="mailto:support@silkgateway.ai">support@silkgateway.ai</a>
+        <a href="/docs/">Documentation</a>
+        <a href="https://github.com/suvlife/silk-gateway">GitHub</a>
+      </div>
+    </div>
+  </footer>
   
   <script>
     let statusChart, pathChart;

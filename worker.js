@@ -153,11 +153,12 @@ async function recordUsage(env, apiKey, model, usage) {
 
   const promptTokens = usage.prompt_tokens || 0;
   const completionTokens = usage.completion_tokens || 0;
+  const totalTokens = promptTokens + completionTokens;
 
   const pricing = CONFIG.pricing[model] || CONFIG.pricing['default'];
   const cost = (promptTokens * pricing.input + completionTokens * pricing.output) / 1_000_000;
 
-  // 月度统计
+  // 月度统计 (KV)
   const monthData = await env.USAGE_LOG.get(`usage:${apiKey}:${monthKey}`, { type: 'json' }) || {
     month: monthKey, requests: 0, promptTokens: 0, completionTokens: 0, totalCost: 0, models: {},
   };
@@ -167,18 +168,29 @@ async function recordUsage(env, apiKey, model, usage) {
   monthData.totalCost += cost;
   if (!monthData.models[model]) monthData.models[model] = { requests: 0, tokens: 0, cost: 0 };
   monthData.models[model].requests += 1;
-  monthData.models[model].tokens += promptTokens + completionTokens;
+  monthData.models[model].tokens += totalTokens;
   monthData.models[model].cost += cost;
   await env.USAGE_LOG.put(`usage:${apiKey}:${monthKey}`, JSON.stringify(monthData), { expirationTtl: 86400 * 90 });
 
-  // 每日统计
+  // 每日统计 (KV)
   const dayData = await env.USAGE_LOG.get(`usage:${apiKey}:${dayKey}`, { type: 'json' }) || {
     date: dayKey, requests: 0, tokens: 0, cost: 0,
   };
   dayData.requests += 1;
-  dayData.tokens += promptTokens + completionTokens;
+  dayData.tokens += totalTokens;
   dayData.cost += cost;
   await env.USAGE_LOG.put(`usage:${apiKey}:${dayKey}`, JSON.stringify(dayData), { expirationTtl: 86400 * 7 });
+
+  // 更新 D1 数据库中最近一条记录的 token 信息
+  try {
+    await env.DB.prepare(`
+      UPDATE request_logs 
+      SET api_key = ?, model = ?, prompt_tokens = ?, completion_tokens = ?, cost = ?
+      WHERE id = (SELECT id FROM request_logs ORDER BY id DESC LIMIT 1)
+    `).bind(apiKey, model, promptTokens, completionTokens, cost).run();
+  } catch (err) {
+    console.error('D1 update error:', err);
+  }
 
   // 扣减余额
   const keyInfo = await env.API_KEYS.get(apiKey, { type: 'json' });
@@ -195,7 +207,7 @@ async function recordUsage(env, apiKey, model, usage) {
     }
   }
 
-  return { tokens: promptTokens + completionTokens, cost, model };
+  return { tokens: totalTokens, cost, model };
 }
 
 async function getBalance(env, apiKey) {
@@ -619,6 +631,25 @@ async function handleRequest(request, env, ctx) {
     return jsonResponse(stats);
   }
 
+  // 用户每日用量统计
+  if (path === '/v1/usage/daily' && request.method === 'GET') {
+    const auth = await authenticate(request, env);
+    if (auth.error) return jsonResponse({ error: auth.error }, auth.status);
+
+    const days = parseInt(url.searchParams.get('days') || '7');
+    const dailyUsage = await getDailyUsage(env, auth.apiKey, days);
+    return jsonResponse(dailyUsage);
+  }
+
+  // 用户每小时用量统计
+  if (path === '/v1/usage/hourly' && request.method === 'GET') {
+    const auth = await authenticate(request, env);
+    if (auth.error) return jsonResponse({ error: auth.error }, auth.status);
+
+    const hourlyUsage = await getHourlyUsage(env, auth.apiKey);
+    return jsonResponse(hourlyUsage);
+  }
+
   return jsonResponse({ error: 'Not found', path }, 404);
 }
 
@@ -740,5 +771,95 @@ async function getStats(env) {
     topPaths: (topPaths || []).map(p => ({ path: p.path, count: p.count, errors: p.errors })),
     statusCodes,
     countryStats: (countryRows || []).map(c => ({ country: c.country || 'Unknown', count: c.count })),
+  };
+}
+
+async function getDailyUsage(env, apiKey, days = 7) {
+  const now = new Date();
+  const dailyData = [];
+  
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().slice(0, 10);
+    const nextDate = new Date(date);
+    nextDate.setDate(nextDate.getDate() + 1);
+    const nextDateStr = nextDate.toISOString().slice(0, 10);
+    
+    const { count: requests } = await env.DB.prepare(
+      'SELECT COUNT(*) as count FROM request_logs WHERE timestamp >= ? AND timestamp < ?'
+    ).bind(dateStr + 'T00:00:00', nextDateStr + 'T00:00:00').first();
+    
+    const { total_tokens } = await env.DB.prepare(
+      'SELECT COALESCE(SUM(prompt_tokens + completion_tokens), 0) as total_tokens FROM request_logs WHERE timestamp >= ? AND timestamp < ?'
+    ).bind(dateStr + 'T00:00:00', nextDateStr + 'T00:00:00').first();
+    
+    dailyData.push({
+      date: dateStr,
+      day: date.toLocaleDateString('en', { weekday: 'short' }),
+      requests: requests || 0,
+      tokens: total_tokens || 0,
+    });
+  }
+  
+  // 获取模型分布
+  const startDate = new Date(now);
+  startDate.setDate(startDate.getDate() - days);
+  const { results: modelRows } = await env.DB.prepare(`
+    SELECT 
+      CASE 
+        WHEN path LIKE '%chat%' THEN 'chat'
+        WHEN path LIKE '%models%' THEN 'models'
+        WHEN path LIKE '%balance%' THEN 'account'
+        WHEN path LIKE '%billing%' THEN 'account'
+        WHEN path LIKE '%usage%' THEN 'account'
+        ELSE 'other'
+      END as category,
+      COUNT(*) as count
+    FROM request_logs 
+    WHERE timestamp >= ?
+    GROUP BY category
+  `).bind(startDate.toISOString().slice(0, 10) + 'T00:00:00').all();
+  
+  return {
+    period: `${days} days`,
+    daily: dailyData,
+    categories: (modelRows || []).map(r => ({ category: r.category, count: r.count })),
+    totalRequests: dailyData.reduce((sum, d) => sum + d.requests, 0),
+    totalTokens: dailyData.reduce((sum, d) => sum + d.tokens, 0),
+  };
+}
+
+async function getHourlyUsage(env, apiKey) {
+  const now = new Date();
+  const today = now.toISOString().slice(0, 10);
+  const hourlyData = [];
+  
+  for (let hour = 0; hour < 24; hour++) {
+    const hourStr = hour.toString().padStart(2, '0');
+    const nextHourStr = (hour + 1).toString().padStart(2, '0');
+    
+    let query, params;
+    if (hour < 23) {
+      query = 'SELECT COUNT(*) as count FROM request_logs WHERE timestamp >= ? AND timestamp < ?';
+      params = [`${today}T${hourStr}:00:00`, `${today}T${nextHourStr}:00:00`];
+    } else {
+      query = 'SELECT COUNT(*) as count FROM request_logs WHERE timestamp >= ?';
+      params = [`${today}T${hourStr}:00:00`];
+    }
+    
+    const { count: requests } = await env.DB.prepare(query).bind(...params).first();
+    
+    hourlyData.push({
+      hour: hour,
+      label: `${hourStr}:00`,
+      requests: requests || 0,
+    });
+  }
+  
+  return {
+    date: today,
+    hourly: hourlyData,
+    peakHour: hourlyData.reduce((max, h) => h.requests > max.requests ? h : max, hourlyData[0]),
   };
 }
