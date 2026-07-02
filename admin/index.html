@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - SilkGateway</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a0f; --bg-card: #12121a; --bg-input: #16161f;
+      --text: #e8e8ed; --text-secondary: #8b8b9a; --text-muted: #5a5a6e;
+      --accent: #c9a84c; --border: rgba(255,255,255,0.08);
+      --green: #4ade80; --red: #f87171; --blue: #60a5fa;
+    }
+    body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); }
+    
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      padding: 16px 24px; border-bottom: 1px solid var(--border);
+      background: rgba(10,10,15,0.9); backdrop-filter: blur(20px);
+    }
+    .nav-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+    .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), #d4af37); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: #0a0a0f; }
+    .logo-text { font-weight: 600; font-size: 18px; }
+    .logo-text span { color: var(--accent); }
+    .nav-links { display: flex; gap: 24px; }
+    .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 14px; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--accent); }
+    
+    .main { max-width: 1400px; margin: 0 auto; padding: 32px 24px; }
+    
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+    .page-header h1 { font-size: 28px; font-weight: 700; }
+    .page-header .time { color: var(--text-muted); font-size: 14px; }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 32px; }
+    .stat-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px;
+    }
+    .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
+    .stat-value { font-size: 28px; font-weight: 700; }
+    .stat-change { font-size: 12px; margin-top: 4px; }
+    .stat-change.good { color: var(--green); }
+    .stat-change.bad { color: var(--red); }
+    
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; }
+    .grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 32px; }
+    
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px;
+    }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .card-title { font-size: 16px; font-weight: 600; }
+    
+    .chart-container { height: 250px; position: relative; }
+    
+    .log-list { max-height: 400px; overflow-y: auto; }
+    .log-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .log-item:last-child { border-bottom: none; }
+    .log-time { color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-size: 11px; width: 80px; }
+    .log-method { 
+      padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 700;
+      font-family: 'JetBrains Mono', monospace; width: 40px; text-align: center;
+    }
+    .log-method.get { background: rgba(96,165,250,0.15); color: var(--blue); }
+    .log-method.post { background: rgba(74,222,128,0.15); color: var(--green); }
+    .log-path { flex: 1; font-family: 'JetBrains Mono', monospace; color: var(--accent); }
+    .log-status { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+    .log-status.s2xx { color: var(--green); }
+    .log-status.s4xx { color: var(--accent); }
+    .log-status.s5xx { color: var(--red); }
+    .log-duration { color: var(--text-muted); font-family: 'JetBrains Mono', monospace; width: 60px; text-align: right; }
+    
+    .country-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .country-name { width: 60px; font-size: 13px; }
+    .country-bar-bg { flex: 1; height: 24px; background: var(--bg-input); border-radius: 4px; overflow: hidden; }
+    .country-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.5s; }
+    .country-count { width: 40px; text-align: right; font-size: 13px; color: var(--text-muted); }
+    
+    .btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; border: none; background: var(--bg-input); color: var(--text); border: 1px solid var(--border); transition: all 0.2s; }
+    .btn:hover { border-color: var(--accent); }
+    
+    @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <div class="logo-icon">S</div>
+        <div class="logo-text">Silk<span>Gateway</span></div>
+      </a>
+      <div class="nav-links">
+        <a href="/admin/" class="active">Admin</a>
+        <a href="/dashboard/">Dashboard</a>
+        <a href="/docs/">Docs</a>
+      </div>
+    </div>
+  </nav>
+  
+  <main class="main">
+    <div class="page-header">
+      <h1>System Monitor</h1>
+      <div style="display:flex;align-items:center;gap:16px">
+        <span class="time" id="lastUpdate">Last updated: --</span>
+        <button class="btn" onclick="refreshData()">Refresh</button>
+      </div>
+    </div>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Requests</div>
+        <div class="stat-value" id="totalRequests">--</div>
+        <div class="stat-change" id="requestsChange"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Error Rate</div>
+        <div class="stat-value" id="errorRate">--</div>
+        <div class="stat-change" id="errorChange"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg Latency</div>
+        <div class="stat-value" id="avgLatency">--</div>
+        <div class="stat-change" id="latencyChange"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Users</div>
+        <div class="stat-value" id="activeUsers">--</div>
+        <div class="stat-change"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Status</div>
+        <div class="stat-value" style="color:var(--green)" id="systemStatus">● Healthy</div>
+        <div class="stat-change"></div>
+      </div>
+    </div>
+    
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Recent Requests</div>
+          <span style="font-size:12px;color:var(--text-muted)" id="logCount">0 logs</span>
+        </div>
+        <div class="log-list" id="logList">
+          <div style="text-align:center;padding:40px;color:var(--text-muted)">Loading...</div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Top Countries</div>
+        </div>
+        <div id="countryList">
+          <div style="text-align:center;padding:40px;color:var(--text-muted)">Loading...</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Status Code Distribution</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Top Endpoints</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="pathChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <script>
+    let statusChart, pathChart;
+    
+    async function refreshData() {
+      try {
+        const res = await fetch('https://api.silkgateway.ai/v1/stats');
+        const data = await res.json();
+        
+        // Update stats
+        document.getElementById('totalRequests').textContent = data.totalRequests;
+        document.getElementById('errorRate').textContent = data.errorRate;
+        document.getElementById('avgLatency').textContent = data.avgDuration;
+        document.getElementById('lastUpdate').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+        
+        // Status code chart
+        updateStatusChart(data.statusCodes);
+        
+        // Path chart
+        updatePathChart(data.topPaths);
+        
+        // Country list
+        updateCountries(data.countryStats);
+        
+        // Load recent logs
+        await loadLogs();
+        
+      } catch (err) {
+        console.error('Failed to load stats:', err);
+      }
+    }
+    
+    async function loadLogs() {
+      try {
+        const res = await fetch('https://api.silkgateway.ai/v1/logs?limit=20');
+        const data = await res.json();
+        
+        if (data.logs && data.logs.length > 0) {
+          document.getElementById('logCount').textContent = `${data.count} logs`;
+          document.getElementById('logList').innerHTML = data.logs.map(log => `
+            <div class="log-item">
+              <span class="log-time">${new Date(log.timestamp).toLocaleTimeString()}</span>
+              <span class="log-method ${log.method.toLowerCase()}">${log.method}</span>
+              <span class="log-path">${log.path}</span>
+              <span class="log-status s${Math.floor(log.status/100)}xx">${log.status}</span>
+              <span class="log-duration">${log.duration}ms</span>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        console.error('Failed to load logs:', err);
+      }
+    }
+    
+    function updateStatusChart(statusCodes) {
+      const ctx = document.getElementById('statusChart').getContext('2d');
+      
+      if (statusChart) statusChart.destroy();
+      
+      const labels = Object.keys(statusCodes);
+      const data = Object.values(statusCodes);
+      const colors = { '2xx': '#4ade80', '3xx': '#60a5fa', '4xx': '#c9a84c', '5xx': '#f87171' };
+      
+      statusChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            backgroundColor: labels.map(l => colors[l] || '#5a5a6e'),
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#8b8b9a', padding: 16 } }
+          }
+        }
+      });
+    }
+    
+    function updatePathChart(paths) {
+      const ctx = document.getElementById('pathChart').getContext('2d');
+      
+      if (pathChart) pathChart.destroy();
+      
+      pathChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: paths.map(p => p.path.replace('/v1/', '')),
+          datasets: [{
+            label: 'Requests',
+            data: paths.map(p => p.count),
+            backgroundColor: 'rgba(201, 168, 76, 0.3)',
+            borderColor: '#c9a84c',
+            borderWidth: 1,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#5a5a6e' } },
+            y: { grid: { display: false }, ticks: { color: '#8b8b9a', font: { family: 'JetBrains Mono', size: 11 } } }
+          }
+        }
+      });
+    }
+    
+    function updateCountries(countries) {
+      const max = Math.max(...countries.map(c => c.count), 1);
+      
+      document.getElementById('countryList').innerHTML = countries.map(c => `
+        <div class="country-bar">
+          <span class="country-name">${c.country}</span>
+          <div class="country-bar-bg">
+            <div class="country-bar-fill" style="width: ${(c.count / max * 100)}%"></div>
+          </div>
+          <span class="country-count">${c.count}</span>
+        </div>
+      `).join('');
+    }
+    
+    // Initial load
+    refreshData();
+    
+    // Auto refresh every 30 seconds
+    setInterval(refreshData, 30000);
+  </script>
+</body>
+</html>

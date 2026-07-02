@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SilkGateway - AI Tokens Global Relay</title>
+  <meta name="description" content="Access China's top AI models with low-cost, high-performance API relay. Built for global developers.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ===== Reset & Variables ===== */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: #16161f;
+      --text-primary: #e8e8ed;
+      --text-secondary: #8b8b9a;
+      --text-muted: #5a5a6e;
+      --accent: #c9a84c;
+      --accent-glow: rgba(201, 168, 76, 0.15);
+      --accent-subtle: rgba(201, 168, 76, 0.08);
+      --border: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.12);
+      --success: #4ade80;
+      --code-bg: #1a1a24;
+    }
+    
+    html { scroll-behavior: smooth; }
+    
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    /* ===== Background Effect ===== */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .bg-glow {
+      position: fixed;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+    
+    /* ===== Layout ===== */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    
+    /* ===== Navigation ===== */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 16px 0;
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+    
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent), #d4af37);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      color: #0a0a0f;
+    }
+    
+    .logo-text {
+      font-weight: 600;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+    
+    .logo-text span { color: var(--accent); }
+    
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    
+    .nav-links a:hover { color: var(--text-primary); }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+    
+    .btn-primary {
+      background: var(--accent);
+      color: #0a0a0f;
+    }
+    
+    .btn-primary:hover {
+      background: #d4af37;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+    
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+    
+    .btn-secondary:hover {
+      border-color: var(--border-hover);
+      background: rgba(255,255,255,0.05);
+    }
+    
+    .btn-large {
+      padding: 14px 28px;
+      font-size: 16px;
+      border-radius: 10px;
+    }
+    
+    /* ===== Hero Section ===== */
+    .hero {
+      position: relative;
+      z-index: 1;
+      padding: 160px 0 100px;
+      text-align: center;
+    }
+    
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: var(--accent-subtle);
+      border: 1px solid rgba(201, 168, 76, 0.2);
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--accent);
+      margin-bottom: 32px;
+      animation: fadeInUp 0.6s ease;
+    }
+    
+    .hero-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .hero h1 {
+      font-size: clamp(48px, 8vw, 80px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+      animation: fadeInUp 0.6s ease 0.1s both;
+    }
+    
+    .hero h1 .accent { color: var(--accent); }
+    
+    .hero-subtitle {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 560px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+      animation: fadeInUp 0.6s ease 0.2s both;
+    }
+    
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      animation: fadeInUp 0.6s ease 0.3s both;
+    }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* ===== Code Block ===== */
+    .code-showcase {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+      margin: -40px auto 0;
+      animation: fadeInUp 0.6s ease 0.4s both;
+    }
+    
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .code-dots {
+      display: flex;
+      gap: 6px;
+    }
+    
+    .code-dots span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      opacity: 0.5;
+    }
+    
+    .code-lang {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .code-body {
+      padding: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      overflow-x: auto;
+    }
+    
+    .code-body .comment { color: #6b7280; }
+    .code-body .keyword { color: #c084fc; }
+    .code-body .string { color: var(--accent); }
+    .code-body .function { color: #60a5fa; }
+    .code-body .operator { color: #94a3b8; }
+    
+    /* ===== Stats ===== */
+    .stats {
+      position: relative;
+      z-index: 1;
+      padding: 80px 0;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    
+    .stat-card {
+      background: var(--bg-secondary);
+      padding: 32px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--text-primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    /* ===== Features ===== */
+    .features {
+      position: relative;
+      z-index: 1;
+      padding: 80px 0;
+    }
+    
+    .section-label {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    
+    .section-title {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+    
+    .section-desc {
+      font-size: 16px;
+      color: var(--text-secondary);
+      max-width: 500px;
+      margin-bottom: 48px;
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      transition: all 0.3s;
+    }
+    
+    .feature-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+    
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--accent-subtle);
+      border: 1px solid rgba(201, 168, 76, 0.15);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .feature-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .feature-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    
+    /* ===== Pricing ===== */
+    .pricing {
+      position: relative;
+      z-index: 1;
+      padding: 80px 0;
+    }
+    
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 48px;
+    }
+    
+    .pricing-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .pricing-card.popular {
+      border-color: var(--accent);
+      background: linear-gradient(180deg, rgba(201, 168, 76, 0.05) 0%, var(--bg-card) 100%);
+    }
+    
+    .pricing-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: var(--accent);
+      color: #0a0a0f;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 100px;
+      margin-bottom: 16px;
+      align-self: flex-start;
+    }
+    
+    .pricing-name {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .pricing-price {
+      font-size: 40px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    
+    .pricing-price span {
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text-secondary);
+    }
+    
+    .pricing-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .pricing-features {
+      list-style: none;
+      margin-bottom: 32px;
+      flex: 1;
+    }
+    
+    .pricing-features li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .pricing-features li::before {
+      content: '✓';
+      color: var(--accent);
+      font-weight: 600;
+    }
+    
+    /* ===== Models ===== */
+    .models {
+      position: relative;
+      z-index: 1;
+      padding: 80px 0;
+    }
+    
+    .models-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    
+    .model-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    
+    .model-card:hover {
+      border-color: var(--border-hover);
+    }
+    
+    .model-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    
+    .model-provider {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    /* ===== CTA ===== */
+    .cta {
+      position: relative;
+      z-index: 1;
+      padding: 100px 0;
+      text-align: center;
+    }
+    
+    .cta-box {
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 64px;
+    }
+    
+    .cta h2 {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    
+    .cta p {
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    /* ===== Footer ===== */
+    footer {
+      position: relative;
+      z-index: 1;
+      padding: 48px 0;
+      border-top: 1px solid var(--border);
+    }
+    
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .footer-copy {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+    
+    .footer-links a {
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    
+    .footer-links a:hover { color: var(--text-primary); }
+    
+    /* ===== Responsive ===== */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .features-grid { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .models-grid { grid-template-columns: repeat(2, 1fr); }
+      .hero-actions { flex-direction: column; }
+      .footer-inner { flex-direction: column; gap: 16px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+  
+  <!-- Navigation -->
+  <nav>
+    <div class="container nav-inner">
+      <a href="/" class="logo">
+        <div class="logo-icon">S</div>
+        <div class="logo-text">Silk<span>Gateway</span></div>
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#models">Models</a>
+        <a href="https://docs.silkgateway.ai">Docs</a>
+        <a href="#get-started" class="btn btn-primary">Get API Key</a>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">
+        <span>Global API Relay</span>
+      </div>
+      <h1>China's AI Models,<br><span class="accent">Global Access</span></h1>
+      <p class="hero-subtitle">
+        High-performance API relay to China's top AI models. 
+        Low latency, competitive pricing, OpenAI-compatible endpoints.
+      </p>
+      <div class="hero-actions">
+        <a href="#get-started" class="btn btn-primary btn-large">Get Started Free</a>
+        <a href="https://docs.silkgateway.ai" class="btn btn-secondary btn-large">View Docs</a>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Code Example -->
+  <div class="code-showcase">
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">bash</span>
+      </div>
+      <div class="code-body">
+        <span class="comment"># One line to access China's best AI models</span><br>
+        <span class="keyword">curl</span> <span class="string">https://api.silkgateway.ai/v1/chat/completions</span> \<br>
+        &nbsp;&nbsp;<span class="operator">-H</span> <span class="string">"Authorization: Bearer sk-your-key"</span> \<br>
+        &nbsp;&nbsp;<span class="operator">-H</span> <span class="string">"Content-Type: application/json"</span> \<br>
+        &nbsp;&nbsp;<span class="operator">-d</span> <span class="string">'{"model":"deepseek-chat","messages":[...],"stream":true}'</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Stats -->
+  <section class="stats">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">300+</div>
+          <div class="stat-label">Global Edge Nodes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">&lt;80ms</div>
+          <div class="stat-label">Avg Latency (US)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">99.9%</div>
+          <div class="stat-label">Uptime SLA</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">50%</div>
+          <div class="stat-label">Cost Savings</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="container">
+      <span class="section-label">Why SilkGateway</span>
+      <h2 class="section-title">Built for Global Developers</h2>
+      <p class="section-desc">Everything you need to integrate China's AI models into your global applications.</p>
+      
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3 class="feature-title">Streaming SSE</h3>
+          <p class="feature-desc">Real-time token streaming with sub-100ms first-byte latency. Fully OpenAI-compatible.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🌍</div>
+          <h3 class="feature-title">Global Edge</h3>
+          <p class="feature-desc">Cloudflare Workers with 300+ edge locations. Users connect to the nearest node.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💰</div>
+          <h3 class="feature-title">50% Cheaper</h3>
+          <p class="feature-desc">Direct access to China's wholesale AI pricing. No markup on token costs.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h3 class="feature-title">Secure & Private</h3>
+          <p class="feature-desc">API key authentication, rate limiting, and request encryption end-to-end.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔌</div>
+          <h3 class="feature-title">Drop-in Compatible</h3>
+          <p class="feature-desc">Works with OpenAI SDK, LangChain, LlamaIndex, and any OpenAI-compatible client.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3 class="feature-title">Usage Analytics</h3>
+          <p class="feature-desc">Real-time dashboards for token usage, latency, and error rates per API key.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Models -->
+  <section class="models" id="models">
+    <div class="container">
+      <span class="section-label">Supported Models</span>
+      <h2 class="section-title">Access Top Chinese AI Models</h2>
+      <p class="section-desc">One API, multiple models. Switch with a single parameter.</p>
+      
+      <div class="models-grid">
+        <div class="model-card">
+          <div class="model-name">deepseek-chat</div>
+          <div class="model-provider">DeepSeek</div>
+        </div>
+        <div class="model-card">
+          <div class="model-name">deepseek-reasoner</div>
+          <div class="model-provider">DeepSeek</div>
+        </div>
+        <div class="model-card">
+          <div class="model-name">doubao-seed-2.0-pro</div>
+          <div class="model-provider">Volcengine</div>
+        </div>
+        <div class="model-card">
+          <div class="model-name">ark-code-latest</div>
+          <div class="model-provider">Volcengine</div>
+        </div>
+        <div class="model-card">
+          <div class="model-name">glm-5.1</div>
+          <div class="model-provider">Zhipu AI</div>
+        </div>
+        <div class="model-card">
+          <div class="model-name">kimi-k2.6</div>
+          <div class="model-provider">Moonshot</div>
+        </div>
+        <div class="model-card">
+          <div class="model-name">qwen3.6-plus</div>
+          <div class="model-provider">Alibaba</div>
+        </div>
+        <div class="model-card">
+          <div class="model-name">minimax-m2.7</div>
+          <div class="model-provider">MiniMax</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Pricing -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <span class="section-label">Simple Pricing</span>
+      <h2 class="section-title">Pay As You Go</h2>
+      <p class="section-desc">No subscriptions. No minimums. Only pay for what you use.</p>
+      
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <div class="pricing-name">Starter</div>
+          <div class="pricing-price">$0 <span>/ month</span></div>
+          <div class="pricing-desc">Perfect for testing and small projects</div>
+          <ul class="pricing-features">
+            <li>10 requests/minute</li>
+            <li>All models access</li>
+            <li>Streaming support</li>
+            <li>Community support</li>
+          </ul>
+          <a href="#get-started" class="btn btn-secondary" style="width:100%;justify-content:center;">Get Started</a>
+        </div>
+        
+        <div class="pricing-card popular">
+          <div class="pricing-badge">Popular</div>
+          <div class="pricing-name">Pro</div>
+          <div class="pricing-price">$29 <span>/ month</span></div>
+          <div class="pricing-desc">For production applications</div>
+          <ul class="pricing-features">
+            <li>200 requests/minute</li>
+            <li>Priority routing</li>
+            <li>Usage dashboard</li>
+            <li>Email support</li>
+            <li>Custom rate limits</li>
+          </ul>
+          <a href="#get-started" class="btn btn-primary" style="width:100%;justify-content:center;">Upgrade to Pro</a>
+        </div>
+        
+        <div class="pricing-card">
+          <div class="pricing-name">Enterprise</div>
+          <div class="pricing-price">Custom</div>
+          <div class="pricing-desc">For high-volume applications</div>
+          <ul class="pricing-features">
+            <li>Unlimited requests</li>
+            <li>Dedicated nodes</li>
+            <li>SLA guarantee</li>
+            <li>24/7 support</li>
+            <li>Custom models</li>
+          </ul>
+          <a href="mailto:enterprise@silkgateway.ai" class="btn btn-secondary" style="width:100%;justify-content:center;">Contact Sales</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- CTA -->
+  <section class="cta" id="get-started">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Start Building Today</h2>
+        <p>Get your API key in 30 seconds. No credit card required for free tier.</p>
+        <div class="hero-actions">
+          <a href="/register/" class="btn btn-primary btn-large">Get Free API Key</a>
+          <a href="/docs/" class="btn btn-secondary btn-large">Read Documentation</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Footer -->
+  <footer>
+    <div class="container footer-inner">
+      <div class="footer-copy">&copy; 2026 SilkGateway. All rights reserved.</div>
+      <div class="footer-links">
+        <a href="https://docs.silkgateway.ai">Documentation</a>
+        <a href="mailto:support@silkgateway.ai">Support</a>
+        <a href="https://twitter.com/silkgateway">Twitter</a>
+        <a href="https://github.com/silkgateway">GitHub</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

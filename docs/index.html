@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Documentation - SilkGateway</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a0f; --bg-card: #12121a; --bg-code: #0d0d14;
+      --text: #e8e8ed; --text-secondary: #8b8b9a; --text-muted: #5a5a6e;
+      --accent: #c9a84c; --border: rgba(255,255,255,0.08);
+      --green: #4ade80; --blue: #60a5fa; --purple: #c084fc; --orange: #fb923c;
+    }
+    body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+    
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      padding: 16px 24px; border-bottom: 1px solid var(--border);
+      background: rgba(10,10,15,0.9); backdrop-filter: blur(20px);
+    }
+    .nav-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+    .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), #d4af37); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; color: #0a0a0f; }
+    .logo-text { font-weight: 600; font-size: 18px; }
+    .logo-text span { color: var(--accent); }
+    .nav-links { display: flex; gap: 24px; }
+    .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 14px; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--accent); }
+    
+    .layout { max-width: 1100px; margin: 0 auto; display: flex; gap: 40px; padding: 40px 24px; }
+    
+    .sidebar { width: 220px; flex-shrink: 0; position: sticky; top: 80px; align-self: flex-start; }
+    .sidebar h3 { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+    .sidebar a { display: block; padding: 6px 0; color: var(--text-secondary); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+    .sidebar a:hover { color: var(--accent); }
+    
+    .content { flex: 1; min-width: 0; }
+    
+    h1 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
+    h2 { font-size: 24px; font-weight: 600; margin: 48px 0 16px; padding-top: 24px; border-top: 1px solid var(--border); }
+    h3 { font-size: 18px; font-weight: 600; margin: 32px 0 12px; }
+    
+    .subtitle { color: var(--text-secondary); font-size: 16px; margin-bottom: 32px; }
+    
+    p { margin-bottom: 16px; color: var(--text-secondary); font-size: 15px; }
+    
+    /* Method badges */
+    .method { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 700; font-family: 'JetBrains Mono', monospace; margin-right: 8px; }
+    .method.get { background: rgba(96,165,250,0.15); color: var(--blue); }
+    .method.post { background: rgba(74,222,128,0.15); color: var(--green); }
+    
+    /* Endpoint box */
+    .endpoint {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+      padding: 20px; margin: 16px 0 32px;
+    }
+    .endpoint-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .endpoint-path { font-family: 'JetBrains Mono', monospace; font-size: 15px; color: var(--accent); }
+    
+    .endpoint-desc { color: var(--text-secondary); font-size: 14px; margin-bottom: 16px; }
+    
+    /* Code blocks */
+    .code-block {
+      background: var(--bg-code); border: 1px solid var(--border); border-radius: 8px;
+      padding: 16px; margin: 12px 0; overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7;
+    }
+    .code-block .comment { color: #6b7280; }
+    .code-block .keyword { color: var(--purple); }
+    .code-block .string { color: var(--accent); }
+    .code-block .number { color: var(--orange); }
+    
+    /* Param table */
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 24px; }
+    th { text-align: left; padding: 10px 12px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    td { padding: 10px 12px; font-size: 14px; border-bottom: 1px solid var(--border); }
+    td:first-child { font-family: 'JetBrains Mono', monospace; color: var(--accent); }
+    .type { color: var(--text-muted); font-size: 12px; }
+    .required { color: var(--green); font-size: 11px; font-weight: 600; }
+    .optional { color: var(--text-muted); font-size: 11px; }
+    
+    /* Response */
+    .response { margin: 12px 0; }
+    .response-label { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+    
+    /* Alert */
+    .alert {
+      padding: 12px 16px; border-radius: 8px; font-size: 14px; margin: 16px 0;
+      background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.2); color: var(--accent);
+    }
+    
+    /* Quick start section */
+    .quick-start { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin: 24px 0; }
+    .quick-start h3 { margin-top: 0; }
+    
+    @media (max-width: 768px) {
+      .layout { flex-direction: column; }
+      .sidebar { width: 100%; position: static; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <div class="logo-icon">S</div>
+        <div class="logo-text">Silk<span>Gateway</span></div>
+      </a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/docs/" class="active">Docs</a>
+        <a href="/dashboard/">Dashboard</a>
+        <a href="/register/">Sign Up</a>
+      </div>
+    </div>
+  </nav>
+  
+  <div class="layout">
+    <aside class="sidebar">
+      <h3>Getting Started</h3>
+      <a href="#quickstart">Quick Start</a>
+      <a href="#authentication">Authentication</a>
+      <a href="#base-url">Base URL</a>
+      
+      <h3>Chat</h3>
+      <a href="#create-completion">Create Completion</a>
+      <a href="#streaming">Streaming</a>
+      
+      <h3>Models</h3>
+      <a href="#list-models">List Models</a>
+      <a href="#available-models">Available Models</a>
+      
+      <h3>Account</h3>
+      <a href="#balance">Balance</a>
+      <a href="#usage">Usage</a>
+      <a href="#billing">Billing</a>
+      <a href="#topup">Top Up</a>
+      <a href="#pricing">Pricing</a>
+    </aside>
+    
+    <main class="content">
+      <h1>API Documentation</h1>
+      <p class="subtitle">Everything you need to integrate SilkGateway into your application.</p>
+      
+      <!-- Quick Start -->
+      <section id="quickstart">
+        <div class="quick-start">
+          <h3>Quick Start</h3>
+          <p>Get started with SilkGateway in under a minute.</p>
+          
+          <div class="code-block">
+<span class="comment"># 1. Get your API key at https://silkgateway.ai/register/</span>
+
+<span class="comment"># 2. Make your first API call</span>
+<span class="keyword">curl</span> https://api.silkgateway.ai/v1/chat/completions \
+  -H <span class="string">"Authorization: Bearer sk-your-key"</span> \
+  -H <span class="string">"Content-Type: application/json"</span> \
+  -d <span class="string">'{
+    "model": "deepseek-chat",
+    "messages": [{"role": "user", "content": "Hello!"}],
+    "stream": true
+  }'</span>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Authentication -->
+      <section id="authentication">
+        <h2>Authentication</h2>
+        <p>All API requests require an API key. Include it in the <code>Authorization</code> header:</p>
+        
+        <div class="code-block">
+Authorization: Bearer sk-your-api-key
+        </div>
+        
+        <p>You can also pass the key via:</p>
+        <ul style="color:var(--text-secondary);margin:0 0 16px 20px;font-size:15px">
+          <li><code>X-Api-Key</code> header</li>
+          <li><code>?api_key=sk-your-key</code> query parameter</li>
+        </ul>
+        
+        <div class="alert">
+          Keep your API key secret. Never expose it in client-side code or public repositories.
+        </div>
+      </section>
+      
+      <!-- Base URL -->
+      <section id="base-url">
+        <h2>Base URL</h2>
+        <div class="code-block">https://api.silkgateway.ai/v1</div>
+        <p>The API is fully compatible with the OpenAI API format. You can use it with any OpenAI-compatible client.</p>
+      </section>
+      
+      <!-- Create Completion -->
+      <section id="create-completion">
+        <h2>Create Chat Completion</h2>
+        
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method post">POST</span>
+            <span class="endpoint-path">/v1/chat/completions</span>
+          </div>
+          <div class="endpoint-desc">Create a chat completion. Supports both streaming and non-streaming modes.</div>
+          
+          <h4 style="font-size:14px;font-weight:600;margin-bottom:12px">Request Body</h4>
+          <table>
+            <thead>
+              <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>model <span class="required">required</span></td>
+                <td><span class="type">string</span></td>
+                <td>Model ID (e.g., <code>deepseek-chat</code>, <code>mimo-v2.5</code>)</td>
+              </tr>
+              <tr>
+                <td>messages <span class="required">required</span></td>
+                <td><span class="type">array</span></td>
+                <td>Array of message objects with <code>role</code> and <code>content</code></td>
+              </tr>
+              <tr>
+                <td>stream</td>
+                <td><span class="type">boolean</span></td>
+                <td>Enable streaming. Default: <code>true</code></td>
+              </tr>
+              <tr>
+                <td>temperature</td>
+                <td><span class="type">number</span></td>
+                <td>Sampling temperature (0-2). Default: 1</td>
+              </tr>
+              <tr>
+                <td>max_tokens</td>
+                <td><span class="type">integer</span></td>
+                <td>Maximum tokens to generate</td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <h4 style="font-size:14px;font-weight:600;margin-bottom:12px">Example Request</h4>
+          <div class="code-block">
+<span class="keyword">curl</span> https://api.silkgateway.ai/v1/chat/completions \
+  -H <span class="string">"Authorization: Bearer sk-your-key"</span> \
+  -H <span class="string">"Content-Type: application/json"</span> \
+  -d <span class="string">'{
+    "model": "deepseek-chat",
+    "messages": [
+      {"role": "system", "content": "You are a helpful assistant."},
+      {"role": "user", "content": "What is the Silk Road?"}
+    ],
+    "temperature": 0.7,
+    "max_tokens": 500
+  }'</span>
+          </div>
+          
+          <div class="response">
+            <div class="response-label">Response (non-streaming)</div>
+            <div class="code-block">
+{
+  <span class="string">"id"</span>: <span class="string">"chatcmpl-abc123"</span>,
+  <span class="string">"object"</span>: <span class="string">"chat.completion"</span>,
+  <span class="string">"model"</span>: <span class="string">"deepseek-v4-flash"</span>,
+  <span class="string">"choices"</span>: [{
+    <span class="string">"index"</span>: <span class="number">0</span>,
+    <span class="string">"message"</span>: {
+      <span class="string">"role"</span>: <span class="string">"assistant"</span>,
+      <span class="string">"content"</span>: <span class="string">"The Silk Road was an ancient trade network..."</span>
+    },
+    <span class="string">"finish_reason"</span>: <span class="string">"stop"</span>
+  }],
+  <span class="string">"usage"</span>: {
+    <span class="string">"prompt_tokens"</span>: <span class="number">25</span>,
+    <span class="string">"completion_tokens"</span>: <span class="number">150</span>,
+    <span class="string">"total_tokens"</span>: <span class="number">175</span>
+  }
+}
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Streaming -->
+      <section id="streaming">
+        <h2>Streaming</h2>
+        <p>Set <code>"stream": true</code> to receive tokens as Server-Sent Events (SSE).</p>
+        
+        <div class="code-block">
+<span class="keyword">curl</span> https://api.silkgateway.ai/v1/chat/completions \
+  -H <span class="string">"Authorization: Bearer sk-your-key"</span> \
+  -H <span class="string">"Content-Type: application/json"</span> \
+  -d <span class="string">'{"model":"deepseek-chat","messages":[{"role":"user","content":"Hello"}],"stream":true}'</span>
+        </div>
+        
+        <div class="response">
+          <div class="response-label">Streaming Response</div>
+          <div class="code-block">
+data: {<span class="string">"choices"</span>:[{<span class="string">"delta"</span>:{<span class="string">"content"</span>:<span class="string">"Hello"</span>}}]}
+
+data: {<span class="string">"choices"</span>:[{<span class="string">"delta"</span>:{<span class="string">"content"</span>:<span class="string">"!"</span>}}]}
+
+data: {<span class="string">"choices"</span>:[{<span class="string">"delta"</span>:{<span class="string">"content"</span>:<span class="string">" How"</span>}}]}
+
+data: [DONE]
+          </div>
+        </div>
+      </section>
+      
+      <!-- List Models -->
+      <section id="list-models">
+        <h2>List Models</h2>
+        
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method get">GET</span>
+            <span class="endpoint-path">/v1/models</span>
+          </div>
+          <div class="endpoint-desc">List all available models.</div>
+          
+          <div class="code-block">
+<span class="keyword">curl</span> https://api.silkgateway.ai/v1/models \
+  -H <span class="string">"Authorization: Bearer sk-your-key"</span>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Available Models -->
+      <section id="available-models">
+        <h2>Available Models</h2>
+        
+        <table>
+          <thead>
+            <tr><th>Model ID</th><th>Provider</th><th>Input</th><th>Output</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>deepseek-chat</td><td>DeepSeek</td><td>$0.14/M</td><td>$0.28/M</td></tr>
+            <tr><td>deepseek-reasoner</td><td>DeepSeek</td><td>$0.55/M</td><td>$2.19/M</td></tr>
+            <tr><td>ark-code-latest</td><td>Volcengine</td><td>$0.11/M</td><td>$0.43/M</td></tr>
+            <tr><td>doubao-seed-2.0-pro</td><td>Volcengine</td><td>$0.11/M</td><td>$0.43/M</td></tr>
+            <tr><td>mimo-v2.5</td><td>Xiaomi</td><td>$0.10/M</td><td>$0.30/M</td></tr>
+            <tr><td>mimo-v2.5-pro</td><td>Xiaomi</td><td>$0.10/M</td><td>$0.30/M</td></tr>
+          </tbody>
+        </table>
+      </section>
+      
+      <!-- Balance -->
+      <section id="balance">
+        <h2>Check Balance</h2>
+        
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method get">GET</span>
+            <span class="endpoint-path">/v1/balance</span>
+          </div>
+          <div class="endpoint-desc">Get your current account balance.</div>
+          
+          <div class="code-block">
+<span class="keyword">curl</span> https://api.silkgateway.ai/v1/balance \
+  -H <span class="string">"Authorization: Bearer sk-your-key"</span>
+          </div>
+          
+          <div class="response">
+            <div class="response-label">Response</div>
+            <div class="code-block">
+{<span class="string">"balance"</span>: <span class="number">10.50</span>, <span class="string">"currency"</span>: <span class="string">"USD"</span>}
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Usage -->
+      <section id="usage">
+        <h2>Check Usage</h2>
+        
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method get">GET</span>
+            <span class="endpoint-path">/v1/usage</span>
+          </div>
+          <div class="endpoint-desc">Get monthly usage statistics.</div>
+          
+          <div class="code-block">
+<span class="keyword">curl</span> https://api.silkgateway.ai/v1/usage?month=2026-07 \
+  -H <span class="string">"Authorization: Bearer sk-your-key"</span>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Billing -->
+      <section id="billing">
+        <h2>Billing Details</h2>
+        
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method get">GET</span>
+            <span class="endpoint-path">/v1/billing</span>
+          </div>
+          <div class="endpoint-desc">Get detailed billing info including costs, quota, and model breakdown.</div>
+          
+          <div class="code-block">
+<span class="keyword">curl</span> https://api.silkgateway.ai/v1/billing \
+  -H <span class="string">"Authorization: Bearer sk-your-key"</span>
+          </div>
+          
+          <div class="response">
+            <div class="response-label">Response</div>
+            <div class="code-block">
+{
+  <span class="string">"month"</span>: <span class="string">"2026-07"</span>,
+  <span class="string">"tier"</span>: <span class="string">"pro"</span>,
+  <span class="string">"usage"</span>: { <span class="string">"requests"</span>: <span class="number">150</span>, <span class="string">"totalTokens"</span>: <span class="number">45000</span> },
+  <span class="string">"costs"</span>: { <span class="string">"subtotal"</span>: <span class="number">0.0126</span>, <span class="string">"discount"</span>: <span class="number">0.00126</span>, <span class="string">"total"</span>: <span class="number">0.01134</span> },
+  <span class="string">"quota"</span>: { <span class="string">"free"</span>: <span class="number">1000000</span>, <span class="string">"used"</span>: <span class="number">45000</span>, <span class="string">"remaining"</span>: <span class="number">955000</span> },
+  <span class="string">"balance"</span>: <span class="number">10.50</span>
+}
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Top Up -->
+      <section id="topup">
+        <h2>Top Up Balance</h2>
+        
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method post">POST</span>
+            <span class="endpoint-path">/v1/topup</span>
+          </div>
+          <div class="endpoint-desc">Add funds to your account balance.</div>
+          
+          <div class="code-block">
+<span class="keyword">curl</span> -X POST https://api.silkgateway.ai/v1/topup \
+  -H <span class="string">"Authorization: Bearer sk-your-key"</span> \
+  -H <span class="string">"Content-Type: application/json"</span> \
+  -d <span class="string">'{"amount": 25}'</span>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Pricing -->
+      <section id="pricing">
+        <h2>Pricing</h2>
+        
+        <div class="endpoint">
+          <div class="endpoint-header">
+            <span class="method get">GET</span>
+            <span class="endpoint-path">/v1/pricing</span>
+          </div>
+          <div class="endpoint-desc">Get current pricing for all models and tiers.</div>
+          
+          <div class="code-block">
+<span class="keyword">curl</span> https://api.silkgateway.ai/v1/pricing
+          </div>
+        </div>
+      </section>
+      
+      <div style="margin-top:60px;padding:24px 0;border-top:1px solid var(--border);text-align:center;color:var(--text-muted);font-size:13px">
+        <p>&copy; 2026 SilkGateway. All rights reserved.</p>
+        <p style="margin-top:8px"><a href="mailto:support@silkgateway.ai" style="color:var(--accent);text-decoration:none">support@silkgateway.ai</a></p>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

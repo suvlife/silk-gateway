@@ -1,0 +1,41 @@
+name = "silk-gateway"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# 自定义域名绑定
+routes = [
+  { pattern = "api.silkgateway.ai/*", zone_name = "silkgateway.ai" }
+]
+
+# KV 命名空间（用于存储 API Keys 和限流数据）
+# 先用以下命令创建：
+#   wrangler kv namespace create API_KEYS
+#   wrangler kv namespace create RATE_LIMIT_KV
+#   wrangler kv namespace create USAGE_LOG
+# 然后把生成的 ID 填入下方
+
+[[kv_namespaces]]
+binding = "API_KEYS"
+id = "1fc8360ffe104064bb02132ccdade18b"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "aed3082705b0400fa00743fd0cb78da7"
+
+[[kv_namespaces]]
+binding = "USAGE_LOG"
+id = "3e51f6a6f1d74faba45288bcfea36f2e"
+
+[[kv_namespaces]]
+binding = "LOGS"
+id = "ae652fa92c7944589801b618a4310ab0"
+
+# 环境变量（敏感信息不要写在这里，用 wrangler secret put）
+# [vars]
+# DEFAULT_PROVIDER = "volcengine"
+
+# 密钥配置（部署时用命令设置）
+# wrangler secret put VOLCENGINE_API_KEY
+# wrangler secret put DEEPSEEK_API_KEY
+# wrangler secret put OPENAI_API_KEY

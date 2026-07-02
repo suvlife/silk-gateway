@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get API Key - SilkGateway</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-input: #16161f;
+      --text: #e8e8ed;
+      --text-secondary: #8b8b9a;
+      --text-muted: #5a5a6e;
+      --accent: #c9a84c;
+      --accent-hover: #d4af37;
+      --border: rgba(255,255,255,0.08);
+      --success: #4ade80;
+      --error: #f87171;
+    }
+    
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Nav */
+    nav {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10,10,15,0.9);
+      backdrop-filter: blur(20px);
+    }
+    
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      color: #0a0a0f;
+    }
+    
+    .logo-text { font-weight: 600; font-size: 18px; }
+    .logo-text span { color: var(--accent); }
+    
+    .nav-links { display: flex; gap: 24px; }
+    .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 14px; }
+    .nav-links a:hover { color: var(--text); }
+    
+    /* Main */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+    
+    .container {
+      width: 100%;
+      max-width: 480px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .header p {
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+    
+    /* Form */
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+    
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+    
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--accent);
+    }
+    
+    .form-group input::placeholder {
+      color: var(--text-muted);
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: #0a0a0f;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn-secondary {
+      background: var(--bg-input);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.05);
+    }
+    
+    /* Plans */
+    .plans {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .plan {
+      background: var(--bg-input);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    
+    .plan:hover {
+      border-color: rgba(201,168,76,0.3);
+    }
+    
+    .plan.selected {
+      border-color: var(--accent);
+      background: rgba(201,168,76,0.05);
+    }
+    
+    .plan-name {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .plan-price {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    
+    .plan-price span {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-secondary);
+    }
+    
+    .plan-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    /* Alert */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    
+    .alert.error {
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.3);
+      color: var(--error);
+    }
+    
+    .alert.success {
+      background: rgba(74,222,128,0.1);
+      border: 1px solid rgba(74,222,128,0.3);
+      color: var(--success);
+    }
+    
+    /* Success State */
+    .success-state {
+      text-align: center;
+      display: none;
+    }
+    
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      background: rgba(74,222,128,0.1);
+      border: 2px solid var(--success);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 32px;
+    }
+    
+    .api-key-box {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin: 24px 0;
+      position: relative;
+    }
+    
+    .api-key-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    
+    .api-key-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--accent);
+      word-break: break-all;
+    }
+    
+    .copy-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .copy-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    
+    .quick-start {
+      text-align: left;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .quick-start h3 {
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .code-block {
+      background: #0d0d14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+    
+    .code-block .comment { color: #6b7280; }
+    .code-block .string { color: var(--accent); }
+    
+    /* Footer */
+    footer {
+      padding: 24px;
+      text-align: center;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    
+    footer a { color: var(--text-secondary); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+    
+    @media (max-width: 480px) {
+      .form-row { grid-template-columns: 1fr; }
+      .plans { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <div class="logo-icon">S</div>
+        <div class="logo-text">Silk<span>Gateway</span></div>
+      </a>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/docs">Docs</a>
+        <a href="/pricing">Pricing</a>
+      </div>
+    </div>
+  </nav>
+  
+  <main>
+    <div class="container">
+      <!-- Register Form -->
+      <div id="registerForm">
+        <div class="header">
+          <h1>Get Your API Key</h1>
+          <p>Start accessing China's top AI models in seconds</p>
+        </div>
+        
+        <div class="form-card">
+          <div id="alert" class="alert"></div>
+          
+          <form onsubmit="handleSubmit(event)">
+            <div class="form-group">
+              <label>Choose Your Plan</label>
+              <div class="plans">
+                <div class="plan" data-tier="free" onclick="selectPlan('free')">
+                  <div class="plan-name">Free</div>
+                  <div class="plan-price">$0</div>
+                  <div class="plan-desc">100K tokens/mo</div>
+                </div>
+                <div class="plan selected" data-tier="pro" onclick="selectPlan('pro')">
+                  <div class="plan-name">Pro</div>
+                  <div class="plan-price">$29<span>/mo</span></div>
+                  <div class="plan-desc">1M tokens/mo</div>
+                </div>
+                <div class="plan" data-tier="enterprise" onclick="selectPlan('enterprise')">
+                  <div class="plan-name">Enterprise</div>
+                  <div class="plan-price">Custom</div>
+                  <div class="plan-desc">10M+ tokens/mo</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="firstName">First Name</label>
+                <input type="text" id="firstName" placeholder="John" required>
+              </div>
+              <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <input type="text" id="lastName" placeholder="Doe" required>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="email">Email Address</label>
+              <input type="email" id="email" placeholder="john@example.com" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="company">Company (Optional)</label>
+              <input type="text" id="company" placeholder="Acme Inc">
+            </div>
+            
+            <div class="form-group">
+              <label for="useCase">Primary Use Case</label>
+              <select id="useCase">
+                <option value="development">Development & Testing</option>
+                <option value="production">Production Application</option>
+                <option value="research">Research & Experimentation</option>
+                <option value="enterprise">Enterprise Integration</option>
+              </select>
+            </div>
+            
+            <button type="submit" class="btn" id="submitBtn">Create Account & Get API Key</button>
+          </form>
+          
+          <p style="text-align:center;margin-top:16px;font-size:13px;color:var(--text-muted)">
+            By signing up, you agree to our <a href="/terms" style="color:var(--accent)">Terms</a> and <a href="/privacy" style="color:var(--accent)">Privacy Policy</a>
+          </p>
+        </div>
+      </div>
+      
+      <!-- Success State -->
+      <div id="successState" class="success-state">
+        <div class="success-icon">✓</div>
+        <h2>Welcome to SilkGateway!</h2>
+        <p style="color:var(--text-secondary);margin-top:8px">Your API key has been generated</p>
+        
+        <div class="api-key-box">
+          <div class="api-key-label">Your API Key</div>
+          <div class="api-key-value" id="apiKeyValue"></div>
+          <button class="copy-btn" onclick="copyApiKey()">Copy</button>
+        </div>
+        
+        <p style="color:var(--error);font-size:13px;margin-bottom:24px">
+          ⚠️ Save this key now — it won't be shown again!
+        </p>
+        
+        <div class="quick-start">
+          <h3>Quick Start</h3>
+          
+          <div class="code-block">
+            <span class="comment"># Test your API key</span><br>
+            curl https://api.silkgateway.ai/v1/chat/completions \<br>
+            &nbsp;&nbsp;-H "Authorization: Bearer <span id="apiKeyShort"></span>" \<br>
+            &nbsp;&nbsp;-H "Content-Type: application/json" \<br>
+            &nbsp;&nbsp;-d '{"model":"deepseek-chat","messages":[{"role":"user","content":"Hello"}]}'
+          </div>
+          
+          <a href="/dashboard" class="btn" style="display:inline-block;text-decoration:none;margin-bottom:12px">Go to Dashboard</a>
+          <a href="/docs" class="btn btn-secondary" style="display:inline-block;text-decoration:none">View Documentation</a>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <footer>
+    <p>&copy; 2026 SilkGateway. All rights reserved. · <a href="/docs">Docs</a> · <a href="mailto:support@silkgateway.ai">Support</a></p>
+  </footer>
+  
+  <script>
+    let selectedTier = 'pro';
+    let generatedApiKey = '';
+    
+    function selectPlan(tier) {
+      selectedTier = tier;
+      document.querySelectorAll('.plan').forEach(p => {
+        p.classList.toggle('selected', p.dataset.tier === tier);
+      });
+    }
+    
+    function showAlert(message, type = 'error') {
+      const alert = document.getElementById('alert');
+      alert.textContent = message;
+      alert.className = `alert ${type}`;
+      alert.style.display = 'block';
+    }
+    
+    function hideAlert() {
+      document.getElementById('alert').style.display = 'none';
+    }
+    
+    async function handleSubmit(e) {
+      e.preventDefault();
+      hideAlert();
+      
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Creating account...';
+      
+      const data = {
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        email: document.getElementById('email').value,
+        company: document.getElementById('company').value,
+        useCase: document.getElementById('useCase').value,
+        tier: selectedTier,
+      };
+      
+      try {
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.error || 'Registration failed');
+        }
+        
+        generatedApiKey = result.apiKey;
+        
+        // Show success
+        document.getElementById('registerForm').style.display = 'none';
+        document.getElementById('successState').style.display = 'block';
+        document.getElementById('apiKeyValue').textContent = generatedApiKey;
+        document.getElementById('apiKeyShort').textContent = generatedApiKey.slice(0, 12) + '...';
+        
+      } catch (err) {
+        showAlert(err.message);
+        btn.disabled = false;
+        btn.textContent = 'Create Account & Get API Key';
+      }
+    }
+    
+    function copyApiKey() {
+      navigator.clipboard.writeText(generatedApiKey);
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = 'Copied!';
+      btn.style.borderColor = 'var(--success)';
+      btn.style.color = 'var(--success)';
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
