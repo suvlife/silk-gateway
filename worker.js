@@ -97,8 +97,8 @@ function generateId() {
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Api-Key',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Api-Key, X-Admin-Secret, X-RTK',
     'Access-Control-Max-Age': '86400',
   };
 }
@@ -474,6 +474,11 @@ function buildUpstreamHeaders(providerConfig, upstreamKey) {
     headers['anthropic-version'] = '2023-06-01';
   } else {
     headers['Authorization'] = `Bearer ${upstreamKey}`;
+  }
+
+  // 合并 provider 自定义 headers (如 User-Agent 绕过 WAF)
+  if (providerConfig.headers && typeof providerConfig.headers === 'object') {
+    Object.assign(headers, providerConfig.headers);
   }
 
   return headers;
