@@ -540,10 +540,16 @@ async function executeWithKeyPool(env, ctx, requestId, userApiKey, providerConfi
       continue;
     }
 
-    // 调用上游
-    const result = isStream
-      ? await handleStreaming(env, ctx, requestId, userApiKey, providerConfig, upstreamKey, body, model, sourceFormat, usageMetadata)
-      : await handleNonStreaming(env, ctx, requestId, userApiKey, providerConfig, upstreamKey, body, model, sourceFormat, usageMetadata);
+    // 调用上游（捕获网络异常，确保返回 { ok: false } 让 combo fallback）
+    let result;
+    try {
+      result = isStream
+        ? await handleStreaming(env, ctx, requestId, userApiKey, providerConfig, upstreamKey, body, model, sourceFormat, usageMetadata)
+        : await handleNonStreaming(env, ctx, requestId, userApiKey, providerConfig, upstreamKey, body, model, sourceFormat, usageMetadata);
+    } catch (err) {
+      console.error('Upstream call exception:', err);
+      result = { ok: false, status: 502, error: `Network error: ${err.message || 'unknown'}` };
+    }
 
     if (result.ok) {
       // 成功:清除该连接的错误状态
@@ -582,6 +588,14 @@ async function handleStreaming(env, ctx, requestId, userApiKey, providerConfig, 
   if (!upstreamResponse.ok) {
     const errorText = await upstreamResponse.text();
     return { ok: false, status: upstreamResponse.status, error: errorText };
+  }
+
+  // 检查 Content-Type: 流式响应应该是 text/event-stream
+  // 如果返回 HTML（WAF 拦截等），视为失败让 combo fallback
+  const contentType = upstreamResponse.headers.get('Content-Type') || '';
+  if (!contentType.includes('text/event-stream') && !contentType.includes('application/json')) {
+    const bodyText = await upstreamResponse.text();
+    return { ok: false, status: 502, error: `Unexpected Content-Type: ${contentType}. Response: ${bodyText.slice(0, 200)}` };
   }
 
   const targetFormat = providerConfig.format || 'openai';
@@ -704,7 +718,14 @@ async function handleNonStreaming(env, ctx, requestId, userApiKey, providerConfi
     return { ok: false, status: upstreamResponse.status, error: errorText };
   }
 
-  let data = await upstreamResponse.json();
+  // 解析响应:如果返回非 JSON（如 WAF 拦截的 HTML），视为失败让 combo fallback
+  let data;
+  try {
+    data = await upstreamResponse.json();
+  } catch (err) {
+    const bodyText = await upstreamResponse.text().catch(() => '');
+    return { ok: false, status: 502, error: `Invalid JSON response (possibly WAF block): ${bodyText.slice(0, 200)}` };
+  }
 
   // 格式翻译 (OpenAI -> Claude 等)
   const targetFormat = providerConfig.format || 'openai';
