@@ -1,6 +1,6 @@
 name = "silk-gateway"
 main = "worker.js"
-compatibility_date = "2024-01-01"
+compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
 # 自定义域名绑定
@@ -8,7 +8,13 @@ routes = [
   { pattern = "api.silkgateway.ai/*", zone_name = "silkgateway.ai" }
 ]
 
-# KV 命名空间（用于存储 API Keys 和限流数据）
+# KV 命名空间说明:
+# API_KEYS: 存储 API Keys、用户数据、Provider 配置、Connection (Key Pool)、Combo 定义
+#   key 前缀: user: | sk- | provider: | conn: | combo: | rr: | ratelimit:
+# RATE_LIMIT_KV: 限流计数器
+# USAGE_LOG: 月度/每日用量统计
+# LOGS: (预留)
+#
 # 先用以下命令创建：
 #   wrangler kv namespace create API_KEYS
 #   wrangler kv namespace create RATE_LIMIT_KV
@@ -43,4 +49,10 @@ database_id = "83b49dac-fcea-4b28-818b-994f093d6831"
 # 密钥配置（部署时用命令设置）
 # wrangler secret put VOLCENGINE_API_KEY
 # wrangler secret put DEEPSEEK_API_KEY
+# wrangler secret put KIMI_API_KEY
+# wrangler secret put MIMO_API_KEY
 # wrangler secret put OPENAI_API_KEY
+# wrangler secret put ADMIN_SECRET  # 管理员密钥（充值、监控、Provider/Connection/Combo 管理端点鉴权，必填）
+# wrangler secret put JWT_SECRET    # JWT 签名密钥（用户登录会话，必填）
+# wrangler secret put RESEND_API_KEY  # Resend 邮件 API key（注册验证、密码重置邮件）
+# wrangler secret put MAIL_FROM      # 可选：发件人地址（默认 onboarding@resend.dev）

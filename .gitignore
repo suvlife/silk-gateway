@@ -18,3 +18,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Draft blog posts
+blog-post.md
+.zcode/

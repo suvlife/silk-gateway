@@ -100,7 +100,81 @@
     .footer-links a:hover { color: var(--text); }
     
     @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } .grid-2, .grid-3 { grid-template-columns: 1fr; } }
-    @media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .tab-bar { overflow-x: auto; } }
+    
+    /* Tab navigation */
+    .tab-bar { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); flex-wrap: nowrap; }
+    .tab-btn { padding: 12px 20px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; background: none; border: none; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    
+    /* Data tables */
+    .data-table-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table thead { background: var(--bg-input); }
+    .data-table th { padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .data-table td { padding: 12px 16px; border-top: 1px solid var(--border); }
+    .data-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+    .data-table td.mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-secondary); }
+    .data-table .row-actions { display: flex; gap: 6px; }
+    .data-table .row-actions .btn { padding: 4px 10px; font-size: 12px; }
+    
+    /* Table toolbar */
+    .table-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    
+    /* Badges */
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .badge.active { background: rgba(74,222,128,0.15); color: var(--green); }
+    .badge.inactive { background: rgba(248,113,113,0.15); color: var(--red); }
+    .badge.warn { background: rgba(201,168,76,0.15); color: var(--accent); }
+    .badge.muted { background: rgba(138,138,154,0.15); color: var(--text-secondary); }
+    .badge.blue { background: rgba(96,165,250,0.15); color: var(--blue); }
+    .badge.gold { background: rgba(201,168,76,0.15); color: var(--accent); }
+    .badge.gray { background: rgba(138,138,154,0.15); color: var(--text-secondary); }
+
+    /* Time/granularity toggle buttons */
+    .time-btn { padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer; background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border); transition: all 0.2s; }
+    .time-btn:hover { color: var(--text); border-color: var(--accent); }
+    .time-btn.active { background: var(--accent); color: #0a0a0f; border-color: var(--accent); }
+    .time-btn-group { display: flex; gap: 6px; }
+    
+    /* Modal overlay */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: flex-start; justify-content: center; padding: 60px 24px; overflow-y: auto; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 28px; width: 100%; max-width: 560px; }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .modal-title { font-size: 18px; font-weight: 600; }
+    .modal-close { background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; line-height: 1; }
+    .modal-close:hover { color: var(--text); }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 10px 14px; border-radius: 8px; background: var(--bg-input);
+      border: 1px solid var(--border); color: var(--text); font-family: inherit; font-size: 14px; outline: none;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+    .form-group .form-check { display: flex; align-items: center; gap: 8px; }
+    .form-group .form-check input { width: auto; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .modal-footer { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+    .btn.primary { background: var(--accent); color: #0a0a0f; border-color: var(--accent); }
+    .btn.primary:hover { opacity: 0.9; }
+    .btn.danger { color: var(--red); border-color: rgba(248,113,113,0.3); }
+    .btn.danger:hover { border-color: var(--red); }
+    .btn.ghost { background: transparent; }
+    
+    /* Toast notification */
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
+    .toast-item { padding: 12px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: var(--bg-card); box-shadow: 0 8px 24px rgba(0,0,0,0.4); animation: toastIn 0.25s ease; }
+    .toast-item.success { border-left: 3px solid var(--green); }
+    .toast-item.error { border-left: 3px solid var(--red); }
+    .toast-item.info { border-left: 3px solid var(--blue); }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .empty-state { text-align: center; padding: 40px; color: var(--text-muted); font-size: 13px; }
   </style>
 </head>
 <body>
@@ -122,13 +196,38 @@
   
   <main class="main">
     <div class="page-header">
-      <h1>System Monitor</h1>
+      <h1>Admin Console</h1>
       <div style="display:flex;align-items:center;gap:16px">
         <span class="time" id="lastUpdate">Last updated: --</span>
-        <button class="btn" onclick="refreshData()">Refresh</button>
+        <button class="btn" id="refreshBtn" onclick="refreshData()" style="display:none">Refresh</button>
+        <button class="btn danger" id="logoutBtn" onclick="logoutAdmin()" style="display:none">Logout</button>
       </div>
     </div>
-    
+
+    <!-- 管理员鉴权 -->
+    <div class="card" id="authCard" style="margin-bottom:24px">
+      <div class="card-header"><div class="card-title">Admin Authentication</div></div>
+      <p style="color:var(--text-secondary);font-size:13px;margin-bottom:12px">Enter the admin secret to view monitoring data. The secret is stored locally in your browser only.</p>
+      <div style="display:flex;gap:12px;align-items:center">
+        <input type="password" id="adminSecretInput" placeholder="Admin secret" style="flex:1;padding:10px 14px;border-radius:8px;background:var(--bg-input);border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:14px;outline:none">
+        <button class="btn" onclick="saveAdminSecret()">Unlock</button>
+      </div>
+      <p id="authError" style="color:var(--red);font-size:13px;margin-top:8px;display:none"></p>
+    </div>
+
+    <div id="tabContainer" style="display:none">
+
+    <div class="tab-bar" id="tabBar">
+      <button class="tab-btn active" data-tab="monitor" onclick="switchTab('monitor')">Monitor</button>
+      <button class="tab-btn" data-tab="providers" onclick="switchTab('providers')">Providers</button>
+      <button class="tab-btn" data-tab="connections" onclick="switchTab('connections')">Connections</button>
+      <button class="tab-btn" data-tab="combos" onclick="switchTab('combos')">Combos</button>
+      <button class="tab-btn" data-tab="analytics" onclick="switchTab('analytics')">Analytics</button>
+      <button class="tab-btn" data-tab="pricing" onclick="switchTab('pricing')">Pricing</button>
+      <button class="tab-btn" data-tab="transactions" onclick="switchTab('transactions')">Transactions</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-monitor">
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-label">Total Requests</div>
@@ -197,7 +296,408 @@
         </div>
       </div>
     </div>
+    </div><!-- /tab-monitor -->
+
+    <!-- Providers tab -->
+    <div class="tab-panel" id="tab-providers">
+      <div class="table-toolbar">
+        <h2 style="font-size:16px;font-weight:600">Configured Providers</h2>
+        <button class="btn primary" onclick="openProviderModal()">+ Add Provider</button>
+      </div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>ID</th><th>Name</th><th>Base URL</th><th>Format</th><th>Priority</th><th>Active</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="providersBody">
+            <tr><td colspan="7" class="empty-state">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Connections tab -->
+    <div class="tab-panel" id="tab-connections">
+      <div class="table-toolbar">
+        <h2 style="font-size:16px;font-weight:600">API Key Connections (Key Pool)</h2>
+        <button class="btn primary" onclick="openConnectionModal()">+ Add Connection</button>
+      </div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Provider</th><th>ID</th><th>Name</th><th>Priority</th><th>Status</th><th>Last Error</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="connectionsBody">
+            <tr><td colspan="7" class="empty-state">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Combos tab -->
+    <div class="tab-panel" id="tab-combos">
+      <div class="table-toolbar">
+        <h2 style="font-size:16px;font-weight:600">Combos</h2>
+        <button class="btn primary" onclick="openComboModal()">+ Create Combo</button>
+      </div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Name</th><th>Models</th><th>Strategy</th><th>Auto-Switch</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="combosBody">
+            <tr><td colspan="5" class="empty-state">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Analytics tab -->
+    <div class="tab-panel" id="tab-analytics">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Today's Total Tokens</div>
+          <div class="stat-value" id="analyticsTotalTokens">--</div>
+          <div class="stat-change" id="analyticsTokensChange"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Today's Total Cost</div>
+          <div class="stat-value" id="analyticsTotalCost">--</div>
+          <div class="stat-change"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active Keys Today</div>
+          <div class="stat-value" id="analyticsActiveKeys">--</div>
+          <div class="stat-change"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Cost / 1K Tokens</div>
+          <div class="stat-value" id="analyticsAvgCost">--</div>
+          <div class="stat-change"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Success Rate</div>
+          <div class="stat-value" id="analyticsSuccessRate">--</div>
+          <div class="stat-change"></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <div class="card-title">Time Range</div>
+          <div class="time-btn-group" id="analyticsGranularity">
+            <button class="time-btn" data-gran="hour" data-period="today" onclick="setAnalyticsGranularity('hour','today')">Hour</button>
+            <button class="time-btn active" data-gran="day" data-period="week" onclick="setAnalyticsGranularity('day','week')">Day</button>
+            <button class="time-btn" data-gran="week" data-period="month" onclick="setAnalyticsGranularity('week','month')">Week</button>
+            <button class="time-btn" data-gran="month" data-period="month" onclick="setAnalyticsGranularity('month','month')">Month</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Token Trend</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="adminTokenTrend"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Cost Trend</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="adminCostTrend"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:32px">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Model Distribution (by tokens, last 30 days)</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="adminModelDist"></canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Provider Distribution (by tokens, last 30 days)</div>
+          </div>
+          <div class="chart-container">
+            <canvas id="adminProviderDist"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="data-table-wrap">
+        <div style="padding:16px;border-bottom:1px solid var(--border)">
+          <div class="card-title">Combo Analysis (last 30 days)</div>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr><th>Combo Name</th><th>Requests</th><th>Total Tokens</th><th>Total Cost</th><th>Errors</th><th>Error Rate</th></tr>
+          </thead>
+          <tbody id="analyticsComboBody">
+            <tr><td colspan="6" class="empty-state">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /tab-analytics -->
+
+    <!-- Pricing tab -->
+    <div class="tab-panel" id="tab-pricing">
+      <div class="table-toolbar">
+        <h2 style="font-size:16px;font-weight:600">Model Pricing</h2>
+        <button class="btn primary" onclick="openPricingModal()">+ Add Custom Price</button>
+      </div>
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Model</th><th>Input ($/M)</th><th>Output ($/M)</th><th>Source</th><th>Updated</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="pricingBody">
+            <tr><td colspan="6" class="empty-state">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /tab-pricing -->
+
+    <!-- Transactions tab -->
+    <div class="tab-panel" id="tab-transactions">
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <div class="card-title">Filters</div>
+          <button class="btn" onclick="exportTransactionsCsv()">Export CSV</button>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+          <div class="form-group" style="margin:0;flex:0 0 160px">
+            <label>Type</label>
+            <select id="txnTypeFilter" onchange="loadTransactions()">
+              <option value="all">All</option>
+              <option value="topup">Topup</option>
+              <option value="consumption">Consumption</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin:0;flex:1;min-width:200px">
+            <label>API Key (optional)</label>
+            <input type="text" id="txnApiKeyFilter" placeholder="sk-... or key id" onkeydown="if(event.key==='Enter')loadTransactions()">
+          </div>
+          <div class="form-group" style="margin:0;flex:0 0 120px">
+            <label>Days</label>
+            <input type="number" id="txnDaysFilter" value="30" min="1" max="365">
+          </div>
+          <button class="btn primary" onclick="loadTransactions()">Apply</button>
+        </div>
+      </div>
+
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px">
+        <div class="stat-card">
+          <div class="stat-label">Total Topups</div>
+          <div class="stat-value" style="color:var(--green)" id="txnTotalTopup">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Consumption</div>
+          <div class="stat-value" style="color:var(--accent)" id="txnTotalConsumption">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Net Balance Change</div>
+          <div class="stat-value" id="txnNetChange">--</div>
+        </div>
+      </div>
+
+      <div class="data-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr><th>Time</th><th>API Key</th><th>Type</th><th>Amount</th><th>Balance After</th><th>Model</th><th>Description</th></tr>
+          </thead>
+          <tbody id="transactionsBody">
+            <tr><td colspan="7" class="empty-state">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /tab-transactions -->
+
+    </div><!-- /tabContainer -->
   </main>
+
+  <!-- Provider modal -->
+  <div class="modal-overlay" id="providerModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="providerModalTitle">Add Provider</div>
+        <button class="modal-close" onclick="closeModal('providerModal')">&times;</button>
+      </div>
+      <form id="providerForm" onsubmit="submitProvider(event)">
+        <input type="hidden" id="providerMode" value="create">
+        <div class="form-group">
+          <label>ID</label>
+          <input type="text" id="providerId" placeholder="e.g. openai" required>
+        </div>
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="providerName" placeholder="Display name" required>
+        </div>
+        <div class="form-group">
+          <label>Base URL</label>
+          <input type="text" id="providerBaseUrl" placeholder="https://api.openai.com" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Auth Type</label>
+            <select id="providerAuthType">
+              <option value="bearer">bearer</option>
+              <option value="x-api-key">x-api-key</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>API Key Env Var</label>
+            <input type="text" id="providerApiKeyEnv" placeholder="OPENAI_API_KEY">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Format</label>
+            <select id="providerFormat">
+              <option value="openai">openai</option>
+              <option value="claude">claude</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Priority</label>
+            <input type="number" id="providerPriority" value="0" step="1">
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-check">
+            <input type="checkbox" id="providerActive" checked>
+            <label for="providerActive" style="margin:0;text-transform:none;letter-spacing:0">Active</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn ghost" onclick="closeModal('providerModal')">Cancel</button>
+          <button type="submit" class="btn primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Connection modal -->
+  <div class="modal-overlay" id="connectionModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Add Connection</div>
+        <button class="modal-close" onclick="closeModal('connectionModal')">&times;</button>
+      </div>
+      <form id="connectionForm" onsubmit="submitConnection(event)">
+        <div class="form-group">
+          <label>Provider</label>
+          <input type="text" id="connProvider" placeholder="openai" required>
+        </div>
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="connName" placeholder="optional label" >
+        </div>
+        <div class="form-group">
+          <label>API Key</label>
+          <input type="password" id="connApiKey" placeholder="sk-..." required>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <input type="number" id="connPriority" value="0" step="1">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn ghost" onclick="closeModal('connectionModal')">Cancel</button>
+          <button type="submit" class="btn primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Combo modal -->
+  <div class="modal-overlay" id="comboModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="comboModalTitle">Create Combo</div>
+        <button class="modal-close" onclick="closeModal('comboModal')">&times;</button>
+      </div>
+      <form id="comboForm" onsubmit="submitCombo(event)">
+        <input type="hidden" id="comboMode" value="create">
+        <input type="hidden" id="comboOrigName" value="">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="comboName" placeholder="e.g. gpt4-pool" required>
+        </div>
+        <div class="form-group">
+          <label>Models (comma-separated)</label>
+          <input type="text" id="comboModels" placeholder="gpt-4o, gpt-4o-mini" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Strategy</label>
+            <select id="comboStrategy">
+              <option value="fallback">fallback</option>
+              <option value="round-robin">round-robin</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Sticky Limit</label>
+            <input type="number" id="comboStickyLimit" value="0" step="1" min="0">
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-check">
+            <input type="checkbox" id="comboAutoSwitch">
+            <label for="comboAutoSwitch" style="margin:0;text-transform:none;letter-spacing:0">Auto-Switch</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="comboDescription" placeholder="Optional description"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn ghost" onclick="closeModal('comboModal')">Cancel</button>
+          <button type="submit" class="btn primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Pricing modal -->
+  <div class="modal-overlay" id="pricingModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="pricingModalTitle">Add Custom Price</div>
+        <button class="modal-close" onclick="closeModal('pricingModal')">&times;</button>
+      </div>
+      <form id="pricingForm" onsubmit="submitPricing(event)">
+        <input type="hidden" id="pricingMode" value="create">
+        <div class="form-group">
+          <label>Model Name</label>
+          <input type="text" id="pricingModel" placeholder="e.g. gpt-4o" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Input Price ($/M tokens)</label>
+            <input type="number" id="pricingInput" placeholder="2.50" step="0.0001" min="0" required>
+          </div>
+          <div class="form-group">
+            <label>Output Price ($/M tokens)</label>
+            <input type="number" id="pricingOutput" placeholder="10.00" step="0.0001" min="0" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn ghost" onclick="closeModal('pricingModal')">Cancel</button>
+          <button type="submit" class="btn primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toastContainer"></div>
+
   
   <footer>
     <div class="footer-inner">
@@ -212,11 +712,63 @@
   
   <script>
     let statusChart, pathChart;
+    let adminTokenTrend, adminCostTrend, adminModelDist, adminProviderDist;
+    let adminSecret = localStorage.getItem('silkAdminSecret') || '';
+    let autoRefreshTimer = null;
+
+    const API_BASE = 'https://api.silkgateway.ai';
+
+    /* Analytics state */
+    let analyticsGranularity = 'day';
+    let analyticsPeriod = 'week';
+    let lastTransactions = [];
+
+    function saveAdminSecret() {
+      const input = document.getElementById('adminSecretInput').value.trim();
+      if (!input) return;
+      adminSecret = input;
+      localStorage.setItem('silkAdminSecret', adminSecret);
+      document.getElementById('authError').style.display = 'none';
+      // 尝试加载数据验证密钥
+      refreshData();
+    }
+
+    function logoutAdmin() {
+      adminSecret = '';
+      localStorage.removeItem('silkAdminSecret');
+      document.getElementById('tabContainer').style.display = 'none';
+      document.getElementById('authCard').style.display = 'block';
+      document.getElementById('adminSecretInput').value = '';
+      document.getElementById('refreshBtn').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'none';
+      if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
+    }
+
+    function adminHeaders() {
+      return { 'X-Admin-Secret': adminSecret };
+    }
     
     async function refreshData() {
+      if (!adminSecret) return;
       try {
-        const res = await fetch('https://api.silkgateway.ai/v1/stats');
+        const res = await fetch(`${API_BASE}/v1/stats`, { headers: adminHeaders() });
+        if (res.status === 401 || res.status === 503) {
+          const data = await res.json();
+          document.getElementById('authError').textContent = data.error || 'Authentication failed';
+          document.getElementById('authError').style.display = 'block';
+          document.getElementById('tabContainer').style.display = 'none';
+          document.getElementById('authCard').style.display = 'block';
+          document.getElementById('refreshBtn').style.display = 'none';
+          document.getElementById('logoutBtn').style.display = 'none';
+          return;
+        }
         const data = await res.json();
+
+        // 鉴权成功，显示内容
+        document.getElementById('authCard').style.display = 'none';
+        document.getElementById('tabContainer').style.display = 'block';
+        document.getElementById('refreshBtn').style.display = '';
+        document.getElementById('logoutBtn').style.display = '';
         
         // Update stats
         document.getElementById('totalRequests').textContent = data.totalRequests;
@@ -236,6 +788,11 @@
         // Load recent logs
         await loadLogs();
         
+        // 启动自动刷新
+        if (!autoRefreshTimer) {
+          autoRefreshTimer = setInterval(refreshData, 30000);
+        }
+        
       } catch (err) {
         console.error('Failed to load stats:', err);
       }
@@ -243,7 +800,7 @@
     
     async function loadLogs() {
       try {
-        const res = await fetch('https://api.silkgateway.ai/v1/logs?limit=20');
+        const res = await fetch(`${API_BASE}/v1/logs?limit=20`, { headers: adminHeaders() });
         const data = await res.json();
         
         if (data.logs && data.logs.length > 0) {
@@ -335,12 +892,873 @@
         </div>
       `).join('');
     }
+
+    /* ===== Tab navigation ===== */
+    let currentTab = 'monitor';
+    const tabLoaded = { monitor: false, providers: false, connections: false, combos: false, analytics: false, pricing: false, transactions: false };
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
+      // Lazy-load data on first visit (monitor loads via refreshData)
+      if (tab === 'providers' && !tabLoaded.providers) { tabLoaded.providers = true; loadProviders(); }
+      if (tab === 'connections' && !tabLoaded.connections) { tabLoaded.connections = true; loadConnections(); }
+      if (tab === 'combos' && !tabLoaded.combos) { tabLoaded.combos = true; loadCombos(); }
+      if (tab === 'analytics' && !tabLoaded.analytics) { tabLoaded.analytics = true; loadAnalytics(); }
+      if (tab === 'pricing' && !tabLoaded.pricing) { tabLoaded.pricing = true; loadPricing(); }
+      if (tab === 'transactions' && !tabLoaded.transactions) { tabLoaded.transactions = true; loadTransactions(); }
+    }
+
+    /* ===== Toast ===== */
+    function toast(msg, type) {
+      type = type || 'info';
+      const el = document.createElement('div');
+      el.className = 'toast-item ' + type;
+      el.textContent = msg;
+      document.getElementById('toastContainer').appendChild(el);
+      setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, 3500);
+    }
+
+    /* ===== Modal helpers ===== */
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+    // Close modal on overlay click
+    document.addEventListener('click', (e) => {
+      if (e.target.classList && e.target.classList.contains('modal-overlay')) e.target.classList.remove('show');
+    });
+
+    /* ===== Generic admin fetch ===== */
+    async function adminFetch(path, opts) {
+      opts = opts || {};
+      opts.headers = Object.assign({}, adminHeaders(), opts.headers || {});
+      const res = await fetch(`${API_BASE}${path}`, opts);
+      return res;
+    }
+
+    async function readError(res) {
+      try { const d = await res.json(); return d.error || d.message || ('HTTP ' + res.status); }
+      catch (e) { return 'HTTP ' + res.status; }
+    }
+
+    /* ===== Providers ===== */
+    async function loadProviders() {
+      try {
+        const res = await adminFetch('/v1/admin/providers');
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.providers || data.data || []);
+        renderProviders(list);
+      } catch (err) {
+        console.error('Failed to load providers:', err);
+        toast('Failed to load providers', 'error');
+      }
+    }
+
+    function renderProviders(list) {
+      const body = document.getElementById('providersBody');
+      if (!list || list.length === 0) {
+        body.innerHTML = '<tr><td colspan="7" class="empty-state">No providers configured. Click "Add Provider" to create one.</td></tr>';
+        return;
+      }
+      body.innerHTML = list.map(p => {
+        const active = p.active === undefined ? true : p.active;
+        return `
+          <tr>
+            <td class="mono">${escapeHtml(p.id)}</td>
+            <td>${escapeHtml(p.name || '')}</td>
+            <td class="mono">${escapeHtml(p.baseUrl || p.base_url || '')}</td>
+            <td>${escapeHtml(p.format || '')}</td>
+            <td>${escapeHtml(String(p.priority != null ? p.priority : 0))}</td>
+            <td><span class="badge ${active ? 'active' : 'inactive'}">${active ? 'Yes' : 'No'}</span></td>
+            <td><div class="row-actions">
+              <button class="btn" onclick="testProvider('${escapeAttr(p.id)}')">Test</button>
+              <button class="btn danger" onclick="deleteProvider('${escapeAttr(p.id)}')">Delete</button>
+            </div></td>
+          </tr>`;
+      }).join('');
+    }
+
+    function openProviderModal() {
+      document.getElementById('providerMode').value = 'create';
+      document.getElementById('providerModalTitle').textContent = 'Add Provider';
+      document.getElementById('providerForm').reset();
+      document.getElementById('providerActive').checked = true;
+      document.getElementById('providerPriority').value = 0;
+      document.getElementById('providerAuthType').value = 'bearer';
+      document.getElementById('providerFormat').value = 'openai';
+      document.getElementById('providerId').disabled = false;
+      document.getElementById('providerModal').classList.add('show');
+    }
+
+    async function submitProvider(e) {
+      e.preventDefault();
+      const id = document.getElementById('providerId').value.trim();
+      if (!id) { toast('ID is required', 'error'); return; }
+      const payload = {
+        id,
+        name: document.getElementById('providerName').value.trim(),
+        baseUrl: document.getElementById('providerBaseUrl').value.trim(),
+        authType: document.getElementById('providerAuthType').value,
+        apiKeyEnv: document.getElementById('providerApiKeyEnv').value.trim(),
+        format: document.getElementById('providerFormat').value,
+        priority: parseInt(document.getElementById('providerPriority').value, 10) || 0,
+        active: document.getElementById('providerActive').checked,
+      };
+      try {
+        const res = await adminFetch('/v1/admin/providers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        toast('Provider added', 'success');
+        closeModal('providerModal');
+        loadProviders();
+      } catch (err) {
+        console.error('Failed to add provider:', err);
+        toast('Failed to add provider', 'error');
+      }
+    }
+
+    async function deleteProvider(id) {
+      if (!confirm(`Delete provider "${id}"? This cannot be undone.`)) return;
+      try {
+        const res = await adminFetch('/v1/admin/providers/' + encodeURIComponent(id), { method: 'DELETE' });
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        toast('Provider deleted', 'success');
+        loadProviders();
+      } catch (err) {
+        console.error('Failed to delete provider:', err);
+        toast('Failed to delete provider', 'error');
+      }
+    }
+
+    async function testProvider(id) {
+      toast('Testing provider "' + id + '"...', 'info');
+      try {
+        const res = await adminFetch('/v1/admin/providers/' + encodeURIComponent(id) + '/test', { method: 'POST' });
+        const txt = await res.text();
+        let msg;
+        try { msg = JSON.parse(txt).error || JSON.parse(txt).message || JSON.parse(txt).result || txt; }
+        catch (e) { msg = txt || ('HTTP ' + res.status); }
+        if (res.ok) toast('Test passed: ' + msg, 'success');
+        else toast('Test failed: ' + msg, 'error');
+      } catch (err) {
+        console.error('Failed to test provider:', err);
+        toast('Failed to test provider', 'error');
+      }
+    }
+
+    /* ===== Connections (Key Pool) ===== */
+    async function loadConnections() {
+      try {
+        const res = await adminFetch('/v1/admin/connections');
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.connections || data.data || []);
+        renderConnections(list);
+      } catch (err) {
+        console.error('Failed to load connections:', err);
+        toast('Failed to load connections', 'error');
+      }
+    }
+
+    function connectionStatus(c) {
+      if (c.lastError && (c.backoffLevel || 0) > 0) return `<span class="badge warn">⚠️ Backoff (LVL ${c.backoffLevel})</span>`;
+      if (c.active === false) return '<span class="badge inactive">🔴 Disabled</span>';
+      return '<span class="badge active">🟢 Active</span>';
+    }
+
+    function renderConnections(list) {
+      const body = document.getElementById('connectionsBody');
+      if (!list || list.length === 0) {
+        body.innerHTML = '<tr><td colspan="7" class="empty-state">No connections configured. Click "Add Connection" to add an API key.</td></tr>';
+        return;
+      }
+      body.innerHTML = list.map(c => {
+        const id = c.id != null ? String(c.id) : '';
+        const provider = escapeAttr(c.provider || '');
+        return `
+          <tr>
+            <td class="mono">${escapeHtml(c.provider || '')}</td>
+            <td class="mono">${escapeHtml(id)}</td>
+            <td>${escapeHtml(c.name || '')}</td>
+            <td>${escapeHtml(String(c.priority != null ? c.priority : 0))}</td>
+            <td>${connectionStatus(c)}</td>
+            <td class="mono">${escapeHtml(c.lastError || '')}</td>
+            <td><div class="row-actions">
+              <button class="btn danger" onclick="deleteConnection('${provider}','${escapeAttr(id)}')">Delete</button>
+            </div></td>
+          </tr>`;
+      }).join('');
+    }
+
+    function openConnectionModal() {
+      document.getElementById('connectionForm').reset();
+      document.getElementById('connPriority').value = 0;
+      document.getElementById('connectionModal').classList.add('show');
+    }
+
+    async function submitConnection(e) {
+      e.preventDefault();
+      const payload = {
+        provider: document.getElementById('connProvider').value.trim(),
+        apiKey: document.getElementById('connApiKey').value,
+        priority: parseInt(document.getElementById('connPriority').value, 10) || 0,
+        name: document.getElementById('connName').value.trim(),
+      };
+      if (!payload.provider || !payload.apiKey) { toast('Provider and API Key are required', 'error'); return; }
+      try {
+        const res = await adminFetch('/v1/admin/connections', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        toast('Connection added', 'success');
+        closeModal('connectionModal');
+        loadConnections();
+      } catch (err) {
+        console.error('Failed to add connection:', err);
+        toast('Failed to add connection', 'error');
+      }
+    }
+
+    async function deleteConnection(provider, id) {
+      if (!confirm(`Delete connection "${id}" from "${provider}"?`)) return;
+      try {
+        const res = await adminFetch('/v1/admin/connections/' + encodeURIComponent(provider) + '/' + encodeURIComponent(id), { method: 'DELETE' });
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        toast('Connection deleted', 'success');
+        loadConnections();
+      } catch (err) {
+        console.error('Failed to delete connection:', err);
+        toast('Failed to delete connection', 'error');
+      }
+    }
+
+    /* ===== Combos ===== */
+    async function loadCombos() {
+      try {
+        // Public endpoint, no admin secret required
+        const res = await fetch(`${API_BASE}/v1/combos`);
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.combos || data.data || []);
+        renderCombos(list);
+      } catch (err) {
+        console.error('Failed to load combos:', err);
+        toast('Failed to load combos', 'error');
+      }
+    }
+
+    function renderCombos(list) {
+      const body = document.getElementById('combosBody');
+      if (!list || list.length === 0) {
+        body.innerHTML = '<tr><td colspan="5" class="empty-state">No combos configured. Click "Create Combo" to add one.</td></tr>';
+        return;
+      }
+      body.innerHTML = list.map(c => {
+        const name = escapeAttr(c.name || '');
+        const models = Array.isArray(c.models) ? c.models.join(', ') : (c.models || '');
+        const strategy = escapeHtml(c.strategy || '');
+        const autoSwitch = c.autoSwitch || c.auto_switch || false;
+        return `
+          <tr>
+            <td class="mono">${escapeHtml(c.name || '')}</td>
+            <td>${escapeHtml(models)}</td>
+            <td>${strategy}</td>
+            <td><span class="badge ${autoSwitch ? 'active' : 'muted'}">${autoSwitch ? 'On' : 'Off'}</span></td>
+            <td><div class="row-actions">
+              <button class="btn" onclick="editCombo('${name}')">Edit</button>
+              <button class="btn danger" onclick="deleteCombo('${name}')">Delete</button>
+            </div></td>
+          </tr>`;
+      }).join('');
+    }
+
+    function openComboModal() {
+      document.getElementById('comboMode').value = 'create';
+      document.getElementById('comboModalTitle').textContent = 'Create Combo';
+      document.getElementById('comboForm').reset();
+      document.getElementById('comboOrigName').value = '';
+      document.getElementById('comboStickyLimit').value = 0;
+      document.getElementById('comboStrategy').value = 'fallback';
+      document.getElementById('comboAutoSwitch').checked = false;
+      document.getElementById('comboName').disabled = false;
+      document.getElementById('comboModal').classList.add('show');
+    }
+
+    async function editCombo(name) {
+      // Fetch current list to populate the form
+      try {
+        const res = await fetch(`${API_BASE}/v1/combos`);
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.combos || data.data || []);
+        const combo = list.find(c => c.name === name);
+        if (!combo) { toast('Combo not found', 'error'); return; }
+        document.getElementById('comboMode').value = 'update';
+        document.getElementById('comboModalTitle').textContent = 'Edit Combo';
+        document.getElementById('comboOrigName').value = combo.name;
+        document.getElementById('comboName').value = combo.name || '';
+        const models = Array.isArray(combo.models) ? combo.models.join(', ') : (combo.models || '');
+        document.getElementById('comboModels').value = models;
+        document.getElementById('comboStrategy').value = combo.strategy || 'fallback';
+        document.getElementById('comboStickyLimit').value = combo.stickyLimit != null ? combo.stickyLimit : (combo.sticky_limit != null ? combo.sticky_limit : 0);
+        document.getElementById('comboAutoSwitch').checked = !!(combo.autoSwitch || combo.auto_switch);
+        document.getElementById('comboDescription').value = combo.description || '';
+        document.getElementById('comboName').disabled = false;
+        document.getElementById('comboModal').classList.add('show');
+      } catch (err) {
+        console.error('Failed to load combo for edit:', err);
+        toast('Failed to load combo', 'error');
+      }
+    }
+
+    async function submitCombo(e) {
+      e.preventDefault();
+      const name = document.getElementById('comboName').value.trim();
+      if (!name) { toast('Name is required', 'error'); return; }
+      const modelsRaw = document.getElementById('comboModels').value;
+      const models = modelsRaw.split(',').map(s => s.trim()).filter(Boolean);
+      if (models.length === 0) { toast('At least one model is required', 'error'); return; }
+      const payload = {
+        name,
+        models,
+        strategy: document.getElementById('comboStrategy').value,
+        stickyLimit: parseInt(document.getElementById('comboStickyLimit').value, 10) || 0,
+        autoSwitch: document.getElementById('comboAutoSwitch').checked,
+        description: document.getElementById('comboDescription').value.trim(),
+      };
+      const mode = document.getElementById('comboMode').value;
+      try {
+        let res;
+        if (mode === 'update') {
+          const origName = document.getElementById('comboOrigName').value || name;
+          res = await adminFetch('/v1/admin/combos/' + encodeURIComponent(origName), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+        } else {
+          res = await adminFetch('/v1/admin/combos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+        }
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        toast(mode === 'update' ? 'Combo updated' : 'Combo created', 'success');
+        closeModal('comboModal');
+        loadCombos();
+      } catch (err) {
+        console.error('Failed to save combo:', err);
+        toast('Failed to save combo', 'error');
+      }
+    }
+
+    async function deleteCombo(name) {
+      if (!confirm(`Delete combo "${name}"?`)) return;
+      try {
+        const res = await adminFetch('/v1/admin/combos/' + encodeURIComponent(name), { method: 'DELETE' });
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        toast('Combo deleted', 'success');
+        loadCombos();
+      } catch (err) {
+        console.error('Failed to delete combo:', err);
+        toast('Failed to delete combo', 'error');
+      }
+    }
+
+    /* ===== Analytics ===== */
+    function setAnalyticsGranularity(gran, period) {
+      analyticsGranularity = gran;
+      analyticsPeriod = period;
+      document.querySelectorAll('#analyticsGranularity .time-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.gran === gran && b.dataset.period === period);
+      });
+      loadAnalyticsTrends();
+    }
+
+    async function loadAnalytics() {
+      await Promise.all([loadAnalyticsSummary(), loadAnalyticsTrends(), loadAnalyticsDistributions(), loadAnalyticsCombos()]);
+    }
+
+    function fmtTokens(n) {
+      n = Number(n) || 0;
+      if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+      if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+      if (n >= 1e3) return (n / 1e3).toFixed(2) + 'K';
+      return String(n);
+    }
+
+    function fmtCost(n) {
+      n = Number(n) || 0;
+      if (n >= 1) return '$' + n.toFixed(2);
+      return '$' + n.toFixed(4);
+    }
+
+    async function loadAnalyticsSummary() {
+      try {
+        const res = await adminFetch('/v1/admin/usage/timeseries?granularity=day&period=today');
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        const data = await res.json();
+        const s = data.summary || {};
+        const totalTokens = s.total_tokens || 0;
+        const totalCost = s.total_cost || 0;
+        const totalReq = s.total_requests || 0;
+        const success = s.success_count || 0;
+        const errors = s.error_count || 0;
+        document.getElementById('analyticsTotalTokens').textContent = fmtTokens(totalTokens);
+        document.getElementById('analyticsTotalCost').textContent = fmtCost(totalCost);
+        // Active keys: not directly available from summary; show request count as proxy indicator
+        document.getElementById('analyticsActiveKeys').textContent = String(totalReq);
+        const avgCost = totalTokens > 0 ? (totalCost / (totalTokens / 1000)) : 0;
+        document.getElementById('analyticsAvgCost').textContent = fmtCost(avgCost);
+        const rate = totalReq > 0 ? (success / totalReq * 100) : 0;
+        document.getElementById('analyticsSuccessRate').textContent = rate.toFixed(1) + '%';
+      } catch (err) {
+        console.error('Failed to load analytics summary:', err);
+        toast('Failed to load analytics summary', 'error');
+      }
+    }
+
+    async function loadAnalyticsTrends() {
+      try {
+        const res = await adminFetch(`/v1/admin/usage/timeseries?granularity=${encodeURIComponent(analyticsGranularity)}&period=${encodeURIComponent(analyticsPeriod)}`);
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        const data = await res.json();
+        const series = data.series || [];
+        const labels = series.map(p => p.label || (p.timestamp ? new Date(p.timestamp).toLocaleString() : ''));
+        const tokenData = series.map(p => p.total_tokens || 0);
+        const costData = series.map(p => p.cost || 0);
+        renderTokenTrend(labels, tokenData);
+        renderCostTrend(labels, costData);
+      } catch (err) {
+        console.error('Failed to load analytics trends:', err);
+        toast('Failed to load analytics trends', 'error');
+      }
+    }
+
+    function renderTokenTrend(labels, data) {
+      const ctx = document.getElementById('adminTokenTrend').getContext('2d');
+      if (adminTokenTrend) adminTokenTrend.destroy();
+      adminTokenTrend = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Total Tokens',
+            data,
+            borderColor: '#c9a84c',
+            backgroundColor: 'rgba(201,168,76,0.1)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#5a5a6e', maxRotation: 0, autoSkip: true } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#5a5a6e', callback: v => fmtTokens(v) } }
+          }
+        }
+      });
+    }
+
+    function renderCostTrend(labels, data) {
+      const ctx = document.getElementById('adminCostTrend').getContext('2d');
+      if (adminCostTrend) adminCostTrend.destroy();
+      adminCostTrend = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Cost ($)',
+            data,
+            borderColor: '#4ade80',
+            backgroundColor: 'rgba(74,222,128,0.1)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#5a5a6e', maxRotation: 0, autoSkip: true } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#5a5a6e', callback: v => '$' + v } }
+          }
+        }
+      });
+    }
+
+    async function loadAnalyticsDistributions() {
+      // Model distribution
+      try {
+        const res = await adminFetch('/v1/admin/usage/timeseries?granularity=day&period=month&group_by=model');
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        const data = await res.json();
+        const series = data.series || [];
+        const modelTotals = {};
+        series.forEach(p => {
+          if (p.groups && typeof p.groups === 'object') {
+            Object.entries(p.groups).forEach(([k, v]) => {
+              modelTotals[k] = (modelTotals[k] || 0) + ((v && v.total_tokens) || (typeof v === 'number' ? v : 0));
+            });
+          }
+        });
+        renderModelDist(modelTotals);
+      } catch (err) {
+        console.error('Failed to load model distribution:', err);
+      }
+      // Provider distribution
+      try {
+        const res = await adminFetch('/v1/admin/usage/timeseries?granularity=day&period=month&group_by=provider');
+        if (!res.ok) { return; }
+        const data = await res.json();
+        const series = data.series || [];
+        const provTotals = {};
+        series.forEach(p => {
+          if (p.groups && typeof p.groups === 'object') {
+            Object.entries(p.groups).forEach(([k, v]) => {
+              provTotals[k] = (provTotals[k] || 0) + ((v && v.total_tokens) || (typeof v === 'number' ? v : 0));
+            });
+          }
+        });
+        renderProviderDist(provTotals);
+      } catch (err) {
+        console.error('Failed to load provider distribution:', err);
+      }
+    }
+
+    function renderModelDist(modelTotals) {
+      const ctx = document.getElementById('adminModelDist').getContext('2d');
+      if (adminModelDist) adminModelDist.destroy();
+      const labels = Object.keys(modelTotals);
+      const data = Object.values(modelTotals);
+      const palette = ['#c9a84c', '#4ade80', '#60a5fa', '#f87171', '#a78bfa', '#fbbf24', '#34d399', '#f472b6'];
+      adminModelDist = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            backgroundColor: labels.map((_, i) => palette[i % palette.length]),
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'right', labels: { color: '#8b8b9a', font: { size: 11 }, boxWidth: 12 } } }
+        }
+      });
+    }
+
+    function renderProviderDist(provTotals) {
+      const ctx = document.getElementById('adminProviderDist').getContext('2d');
+      if (adminProviderDist) adminProviderDist.destroy();
+      const labels = Object.keys(provTotals);
+      const data = Object.values(provTotals);
+      const palette = ['#60a5fa', '#c9a84c', '#4ade80', '#f87171', '#a78bfa', '#fbbf24', '#34d399', '#f472b6'];
+      adminProviderDist = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            backgroundColor: labels.map((_, i) => palette[i % palette.length]),
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'right', labels: { color: '#8b8b9a', font: { size: 11 }, boxWidth: 12 } } }
+        }
+      });
+    }
+
+    async function loadAnalyticsCombos() {
+      try {
+        const res = await adminFetch('/v1/usage/aggregate?group_by=combo&days=30');
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        const data = await res.json();
+        let list = [];
+        if (Array.isArray(data)) list = data;
+        else if (data.items) list = data.items;
+        else if (data.data) list = data.data;
+        else if (data.aggregates) list = data.aggregates;
+        else if (data.groups) list = data.groups;
+        renderAnalyticsCombos(list);
+      } catch (err) {
+        console.error('Failed to load combo analysis:', err);
+        toast('Failed to load combo analysis', 'error');
+      }
+    }
+
+    function renderAnalyticsCombos(list) {
+      const body = document.getElementById('analyticsComboBody');
+      if (!list || list.length === 0) {
+        body.innerHTML = '<tr><td colspan="6" class="empty-state">No combo usage data for the last 30 days.</td></tr>';
+        return;
+      }
+      body.innerHTML = list.map(c => {
+        const name = escapeHtml(c.name || c.combo || c.key || c.label || '');
+        const reqs = c.requests || c.request_count || c.count || 0;
+        const tokens = c.total_tokens || c.tokens || 0;
+        const cost = c.total_cost || c.cost || 0;
+        const errors = c.errors || c.error_count || 0;
+        const errRate = reqs > 0 ? (errors / reqs * 100) : 0;
+        return `
+          <tr>
+            <td class="mono">${name}</td>
+            <td>${escapeHtml(String(reqs))}</td>
+            <td>${escapeHtml(fmtTokens(tokens))}</td>
+            <td>${escapeHtml(fmtCost(cost))}</td>
+            <td>${escapeHtml(String(errors))}</td>
+            <td><span class="badge ${errRate > 10 ? 'inactive' : errRate > 0 ? 'warn' : 'active'}">${errRate.toFixed(1)}%</span></td>
+          </tr>`;
+      }).join('');
+    }
+
+    /* ===== Pricing ===== */
+    let pricingCache = {};
+    async function loadPricing() {
+      try {
+        const res = await adminFetch('/v1/admin/pricing');
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        const data = await res.json();
+        const pricing = data.pricing || data || {};
+        pricingCache = pricing;
+        renderPricing(pricing);
+      } catch (err) {
+        console.error('Failed to load pricing:', err);
+        toast('Failed to load pricing', 'error');
+      }
+    }
+
+    function renderPricing(pricing) {
+      const body = document.getElementById('pricingBody');
+      const entries = Object.entries(pricing);
+      if (entries.length === 0) {
+        body.innerHTML = '<tr><td colspan="6" class="empty-state">No pricing data available.</td></tr>';
+        return;
+      }
+      entries.sort((a, b) => a[0].localeCompare(b[0]));
+      body.innerHTML = entries.map(([model, p]) => {
+        const input = p.input != null ? p.input : '';
+        const output = p.output != null ? p.output : '';
+        const source = (p.source || 'default').toLowerCase();
+        const sourceBadge = source === 'custom'
+          ? '<span class="badge gold">custom</span>'
+          : source === 'provider'
+            ? '<span class="badge blue">provider</span>'
+            : '<span class="badge gray">default</span>';
+        const updated = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString() : '-';
+        const modelAttr = escapeAttr(model);
+        const actions = source === 'custom'
+          ? `<div class="row-actions">
+              <button class="btn" onclick="editPricing('${modelAttr}')">Edit</button>
+              <button class="btn danger" onclick="resetPricing('${modelAttr}')">Reset</button>
+            </div>`
+          : `<div class="row-actions">
+              <button class="btn" onclick="editPricing('${modelAttr}')">Edit</button>
+            </div>`;
+        return `
+          <tr>
+            <td class="mono">${escapeHtml(model)}</td>
+            <td>${escapeHtml(typeof input === 'number' ? input.toFixed(4) : String(input))}</td>
+            <td>${escapeHtml(typeof output === 'number' ? output.toFixed(4) : String(output))}</td>
+            <td>${sourceBadge}</td>
+            <td class="mono">${escapeHtml(updated)}</td>
+            <td>${actions}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    function openPricingModal() {
+      document.getElementById('pricingMode').value = 'create';
+      document.getElementById('pricingModalTitle').textContent = 'Add Custom Price';
+      document.getElementById('pricingForm').reset();
+      document.getElementById('pricingModel').disabled = false;
+      document.getElementById('pricingModal').classList.add('show');
+    }
+
+    function editPricing(model) {
+      document.getElementById('pricingMode').value = 'edit';
+      document.getElementById('pricingModalTitle').textContent = 'Edit Price: ' + model;
+      document.getElementById('pricingModel').value = model;
+      document.getElementById('pricingModel').disabled = true;
+      // Prefill from cached values
+      const p = pricingCache[model] || {};
+      document.getElementById('pricingInput').value = p.input != null ? p.input : '';
+      document.getElementById('pricingOutput').value = p.output != null ? p.output : '';
+      document.getElementById('pricingModal').classList.add('show');
+    }
+
+    async function submitPricing(e) {
+      e.preventDefault();
+      const mode = document.getElementById('pricingMode').value;
+      const model = document.getElementById('pricingModel').value.trim();
+      if (!model) { toast('Model name is required', 'error'); return; }
+      const inputVal = parseFloat(document.getElementById('pricingInput').value);
+      const outputVal = parseFloat(document.getElementById('pricingOutput').value);
+      if (isNaN(inputVal) || isNaN(outputVal)) { toast('Valid input and output prices are required', 'error'); return; }
+      try {
+        const res = await adminFetch('/v1/admin/pricing/' + encodeURIComponent(model), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input: inputVal, output: outputVal }),
+        });
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        toast(mode === 'edit' ? 'Pricing updated' : 'Custom price added', 'success');
+        closeModal('pricingModal');
+        loadPricing();
+      } catch (err) {
+        console.error('Failed to save pricing:', err);
+        toast('Failed to save pricing', 'error');
+      }
+    }
+
+    async function resetPricing(model) {
+      if (!confirm(`Reset pricing for "${model}" to default? This will remove the custom price.`)) return;
+      try {
+        const res = await adminFetch('/v1/admin/pricing/' + encodeURIComponent(model), { method: 'DELETE' });
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        toast('Pricing reset to default', 'success');
+        loadPricing();
+      } catch (err) {
+        console.error('Failed to reset pricing:', err);
+        toast('Failed to reset pricing', 'error');
+      }
+    }
+
+    /* ===== Transactions ===== */
+    async function loadTransactions() {
+      const type = document.getElementById('txnTypeFilter').value;
+      const days = document.getElementById('txnDaysFilter').value || 30;
+      const apiKey = document.getElementById('txnApiKeyFilter').value.trim();
+      let path = `/v1/admin/transactions?type=${encodeURIComponent(type)}&days=${encodeURIComponent(days)}`;
+      if (apiKey) path += `&api_key=${encodeURIComponent(apiKey)}`;
+      try {
+        const res = await adminFetch(path);
+        if (!res.ok) { toast(await readError(res), 'error'); return; }
+        const data = await res.json();
+        const list = data.transactions || [];
+        lastTransactions = list;
+        renderTransactionSummary(list);
+        renderTransactions(list);
+      } catch (err) {
+        console.error('Failed to load transactions:', err);
+        toast('Failed to load transactions', 'error');
+      }
+    }
+
+    function renderTransactionSummary(list) {
+      let topup = 0, consumption = 0;
+      list.forEach(t => {
+        const amt = Math.abs(Number(t.amount) || 0);
+        if (t.type === 'topup' || t.type === 'refund') topup += amt;
+        if (t.type === 'consumption') consumption += amt;
+      });
+      const net = topup - consumption;
+      document.getElementById('txnTotalTopup').textContent = fmtCost(topup);
+      document.getElementById('txnTotalConsumption').textContent = fmtCost(consumption);
+      const netEl = document.getElementById('txnNetChange');
+      netEl.textContent = (net >= 0 ? '+$' : '-$') + Math.abs(net).toFixed(Math.abs(net) >= 1 ? 2 : 4);
+      netEl.style.color = net >= 0 ? 'var(--green)' : 'var(--red)';
+    }
+
+    function txnTypeBadge(type) {
+      const t = (type || '').toLowerCase();
+      if (t === 'topup') return '<span class="badge active">topup</span>';
+      if (t === 'consumption') return '<span class="badge gold">consumption</span>';
+      if (t === 'refund') return '<span class="badge blue">refund</span>';
+      return '<span class="badge muted">' + escapeHtml(type || '') + '</span>';
+    }
+
+    function renderTransactions(list) {
+      const body = document.getElementById('transactionsBody');
+      if (!list || list.length === 0) {
+        body.innerHTML = '<tr><td colspan="7" class="empty-state">No transactions found.</td></tr>';
+        return;
+      }
+      body.innerHTML = list.map(t => {
+        const rawAmt = Number(t.amount) || 0;
+        const type = (t.type || '').toLowerCase();
+        // Display sign: topup/refund positive (green), consumption negative (red)
+        const isPositive = type === 'topup' || type === 'refund';
+        const absAmt = Math.abs(rawAmt);
+        const amtColor = isPositive ? 'var(--green)' : 'var(--red)';
+        const amtStr = (isPositive ? '+$' : '-$') + absAmt.toFixed(absAmt >= 1 ? 2 : 4);
+        const key = escapeHtml(t.api_key ? (String(t.api_key).slice(0, 10) + '...') : '-');
+        return `
+          <tr>
+            <td class="mono">${escapeHtml(t.timestamp ? new Date(t.timestamp).toLocaleString() : '-')}</td>
+            <td class="mono">${key}</td>
+            <td>${txnTypeBadge(t.type)}</td>
+            <td style="color:${amtColor};font-weight:600">${escapeHtml(amtStr)}</td>
+            <td>${escapeHtml(t.balance_after != null ? fmtCost(t.balance_after) : '-')}</td>
+            <td class="mono">${escapeHtml(t.model || '-')}</td>
+            <td>${escapeHtml(t.description || '')}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    function exportTransactionsCsv() {
+      if (!lastTransactions || lastTransactions.length === 0) {
+        toast('No transactions to export', 'info');
+        return;
+      }
+      const headers = ['ID', 'Timestamp', 'API Key', 'Type', 'Amount', 'Balance After', 'Model', 'Prompt Tokens', 'Completion Tokens', 'Description', 'Request ID'];
+      const rows = lastTransactions.map(t => [
+        t.id || '',
+        t.timestamp || '',
+        t.api_key || '',
+        t.type || '',
+        t.amount != null ? t.amount : '',
+        t.balance_after != null ? t.balance_after : '',
+        t.model || '',
+        t.prompt_tokens != null ? t.prompt_tokens : '',
+        t.completion_tokens != null ? t.completion_tokens : '',
+        (t.description || '').replace(/"/g, '""'),
+        t.request_id || '',
+      ]);
+      const csv = [headers.join(','), ...rows.map(r => r.map(c => `"${String(c)}"`).join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `transactions_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast('CSV exported', 'success');
+    }
+
+    /* ===== HTML escape helpers ===== */
+    function escapeHtml(s) {
+      if (s == null) return '';
+      return String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    }
+    function escapeAttr(s) {
+      if (s == null) return '';
+      return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
     
-    // Initial load
-    refreshData();
-    
-    // Auto refresh every 30 seconds
-    setInterval(refreshData, 30000);
+    // 初始加载：若已有 admin secret 则自动加载数据，否则等待输入
+    if (adminSecret) {
+      document.getElementById('adminSecretInput').value = adminSecret;
+      refreshData();
+    }
   </script>
 </body>
 </html>

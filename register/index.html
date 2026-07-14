@@ -157,6 +157,12 @@
     .form-group input::placeholder {
       color: var(--text-muted);
     }
+
+    .hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
     
     .form-row {
       display: grid;
@@ -442,6 +448,17 @@
               <label for="email">Email Address</label>
               <input type="email" id="email" placeholder="john@example.com" required>
             </div>
+
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" placeholder="Create a password" required minlength="8">
+              <div class="hint">At least 8 characters with letters and numbers</div>
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword">Confirm Password</label>
+              <input type="password" id="confirmPassword" placeholder="Re-enter your password" required>
+            </div>
             
             <div class="form-group">
               <label for="company">Company (Optional)</label>
@@ -469,33 +486,16 @@
       
       <!-- Success State -->
       <div id="successState" class="success-state">
-        <div class="success-icon">✓</div>
-        <h2>Welcome to SilkGateway!</h2>
-        <p style="color:var(--text-secondary);margin-top:8px">Your API key has been generated</p>
-        
-        <div class="api-key-box">
-          <div class="api-key-label">Your API Key</div>
-          <div class="api-key-value" id="apiKeyValue"></div>
-          <button class="copy-btn" onclick="copyApiKey()">Copy</button>
-        </div>
-        
-        <p style="color:var(--error);font-size:13px;margin-bottom:24px">
-          ⚠️ Save this key now — it won't be shown again!
+        <div class="success-icon">📧</div>
+        <h2>Check Your Email</h2>
+        <p style="color:var(--text-secondary);margin-top:8px">
+          We've sent a verification link to <strong id="registeredEmail" style="color:var(--text)"></strong>.
+          Click the link to activate your account and receive your API key.
         </p>
-        
-        <div class="quick-start">
-          <h3>Quick Start</h3>
-          
-          <div class="code-block">
-            <span class="comment"># Test your API key</span><br>
-            curl https://api.silkgateway.ai/v1/chat/completions \<br>
-            &nbsp;&nbsp;-H "Authorization: Bearer <span id="apiKeyShort"></span>" \<br>
-            &nbsp;&nbsp;-H "Content-Type: application/json" \<br>
-            &nbsp;&nbsp;-d '{"model":"deepseek-chat","messages":[{"role":"user","content":"Hello"}]}'
-          </div>
-          
-          <a href="/dashboard" class="btn" style="display:inline-block;text-decoration:none;margin-bottom:12px">Go to Dashboard</a>
-          <a href="/docs" class="btn btn-secondary" style="display:inline-block;text-decoration:none">View Documentation</a>
+
+        <div style="margin-top:24px">
+          <button class="btn btn-secondary" id="resendBtn" onclick="resendVerification()" style="margin-bottom:12px">Resend Verification Email</button>
+          <a href="/dashboard/" class="btn" style="display:inline-block;text-decoration:none">Go to Dashboard Login</a>
         </div>
       </div>
     </div>
@@ -514,7 +514,7 @@
   
   <script>
     let selectedTier = 'pro';
-    let generatedApiKey = '';
+    let registeredEmail = '';
     
     function selectPlan(tier) {
       selectedTier = tier;
@@ -538,6 +538,23 @@
       e.preventDefault();
       hideAlert();
       
+      // Client-side password validation
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      if (password !== confirmPassword) {
+        showAlert('Passwords do not match');
+        return;
+      }
+      if (password.length < 8) {
+        showAlert('Password must be at least 8 characters long');
+        return;
+      }
+      if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+        showAlert('Password must contain both letters and numbers');
+        return;
+      }
+      
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
       btn.textContent = 'Creating account...';
@@ -546,6 +563,7 @@
         firstName: document.getElementById('firstName').value,
         lastName: document.getElementById('lastName').value,
         email: document.getElementById('email').value,
+        password: password,
         company: document.getElementById('company').value,
         useCase: document.getElementById('useCase').value,
         tier: selectedTier,
@@ -564,13 +582,11 @@
           throw new Error(result.error || 'Registration failed');
         }
         
-        generatedApiKey = result.apiKey;
-        
-        // Show success
+        // Show success - verification email sent
+        registeredEmail = result.email || data.email;
         document.getElementById('registerForm').style.display = 'none';
         document.getElementById('successState').style.display = 'block';
-        document.getElementById('apiKeyValue').textContent = generatedApiKey;
-        document.getElementById('apiKeyShort').textContent = generatedApiKey.slice(0, 12) + '...';
+        document.getElementById('registeredEmail').textContent = registeredEmail;
         
       } catch (err) {
         showAlert(err.message);
@@ -579,17 +595,45 @@
       }
     }
     
-    function copyApiKey() {
-      navigator.clipboard.writeText(generatedApiKey);
-      const btn = document.querySelector('.copy-btn');
-      btn.textContent = 'Copied!';
-      btn.style.borderColor = 'var(--success)';
-      btn.style.color = 'var(--success)';
-      setTimeout(() => {
-        btn.textContent = 'Copy';
-        btn.style.borderColor = '';
-        btn.style.color = '';
-      }, 2000);
+    async function resendVerification() {
+      const btn = document.getElementById('resendBtn');
+      btn.disabled = true;
+      const originalText = btn.textContent;
+      btn.textContent = 'Sending...';
+      
+      try {
+        const response = await fetch('/api/resend-verification', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: registeredEmail }),
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to resend verification email');
+        }
+        
+        btn.textContent = 'Sent! Check your email';
+        
+        // Rate limit countdown (1 minute)
+        let countdown = 60;
+        btn.disabled = true;
+        const timer = setInterval(() => {
+          countdown -= 1;
+          if (countdown <= 0) {
+            clearInterval(timer);
+            btn.disabled = false;
+            btn.textContent = originalText;
+          } else {
+            btn.textContent = `Resend in ${countdown}s`;
+          }
+        }, 1000);
+      } catch (err) {
+        showAlert(err.message);
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
     }
   </script>
 </body>

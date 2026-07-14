@@ -91,6 +91,19 @@
     
     .alert { padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; display: none; }
     .alert.success { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: var(--success); }
+    .alert.error { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: var(--error); display: block; }
+    .alert.info { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3); color: var(--accent); display: block; }
+
+    .auth-links { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; font-size: 14px; }
+    .auth-links a { color: var(--accent); text-decoration: none; cursor: pointer; }
+    .auth-links a:hover { text-decoration: underline; }
+    .auth-divider { height: 1px; background: var(--border); margin: 16px 0; }
+    .auth-switch { font-size: 14px; color: var(--text-secondary); text-align: center; margin-top: 16px; }
+    .auth-switch a { color: var(--accent); text-decoration: none; cursor: pointer; }
+    .auth-switch a:hover { text-decoration: underline; }
+    .back-link { font-size: 13px; color: var(--text-secondary); cursor: pointer; display: inline-block; margin-bottom: 16px; }
+    .back-link:hover { color: var(--text); }
+    .login-alert { max-width: 400px; margin: 0 auto 16px; display: none; }
     
     footer { padding: 24px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 13px; }
     .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
@@ -98,7 +111,25 @@
     .footer-links a { color: var(--text-secondary); text-decoration: none; }
     .footer-links a:hover { color: var(--text); }
     
-    @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .grid-2 { grid-template-columns: 1fr; } .nav-links { display: none; } }
+    /* Token Analytics & Billing */
+    .txn-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .txn-table th { text-align: left; color: var(--text-secondary); font-weight: 500; padding: 8px 12px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-card); z-index: 1; }
+    .txn-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+    .txn-table tr:last-child td { border-bottom: none; }
+    .txn-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .badge-topup { background: rgba(74,222,128,0.15); color: var(--success); }
+    .badge-consumption { background: rgba(201,168,76,0.15); color: var(--accent); }
+    .billing-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .billing-stat { background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .billing-stat-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+    .billing-stat-value { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+    .scroll-area { max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-input); }
+    .txn-empty { text-align: center; color: var(--text-muted); padding: 32px 12px !important; }
+    .section-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+    .chart-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+
+    @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .grid-2 { grid-template-columns: 1fr; } .grid-3 { grid-template-columns: 1fr; } .billing-stats { grid-template-columns: repeat(2, 1fr); } .nav-links { display: none; } }
   </style>
 </head>
 <body>
@@ -115,6 +146,11 @@
         <a href="/admin/">Admin</a>
         <a href="/docs/">Docs</a>
       </div>
+      <div class="user-menu" id="userMenu" style="display:none">
+        <div class="user-avatar" id="userAvatar">U</div>
+        <span class="user-email" id="userEmail">user@example.com</span>
+        <button class="btn btn-small" style="margin-left:8px" onclick="logout()">Logout</button>
+      </div>
     </div>
   </nav>
   
@@ -126,13 +162,52 @@
     
     <!-- Login Prompt -->
     <div id="loginPrompt" style="display:none;text-align:center;padding:60px 0">
-      <h2 style="margin-bottom:16px">Please log in to view your dashboard</h2>
-      <p style="color:var(--text-secondary);margin-bottom:32px">Enter your API key to access your account</p>
-      <div style="max-width:400px;margin:0 auto">
-        <div class="form-group">
-          <input type="text" id="loginApiKey" placeholder="sk-xxxxxxxxxxxx" style="text-align:center">
+      <!-- Email + Password Login -->
+      <div id="loginView">
+        <h2 style="margin-bottom:16px">Please log in to view your dashboard</h2>
+        <p style="color:var(--text-secondary);margin-bottom:32px">Sign in with your email and password</p>
+        <div id="loginAlert" class="alert error login-alert"></div>
+        <div style="max-width:400px;margin:0 auto">
+          <div class="form-group">
+            <input type="email" id="loginEmail" placeholder="john@example.com" style="text-align:center">
+          </div>
+          <div class="form-group">
+            <input type="password" id="loginPassword" placeholder="Password" style="text-align:center" onkeydown="if(event.key==='Enter')loginWithCredentials()">
+          </div>
+          <button class="btn btn-primary" id="loginBtn" style="width:100%" onclick="loginWithCredentials()">Login</button>
+          <div class="auth-links">
+            <a onclick="showForgotPassword()">Forgot password?</a>
+          </div>
+          <div class="auth-divider"></div>
+          <p class="auth-switch">Don't have an account? <a href="/register/">Sign up</a></p>
         </div>
-        <button class="btn btn-primary" style="width:100%" onclick="loginWithKey()">Access Dashboard</button>
+      </div>
+
+      <!-- Forgot Password -->
+      <div id="forgotView" style="display:none">
+        <h2 style="margin-bottom:16px">Reset your password</h2>
+        <p style="color:var(--text-secondary);margin-bottom:32px">Enter your email to receive a reset link</p>
+        <div id="forgotAlert" class="alert info login-alert" style="display:none"></div>
+        <div style="max-width:400px;margin:0 auto">
+          <div class="form-group">
+            <input type="email" id="forgotEmail" placeholder="john@example.com" style="text-align:center">
+          </div>
+          <button class="btn btn-primary" id="forgotBtn" style="width:100%" onclick="submitForgotPassword()">Send Reset Link</button>
+          <span class="back-link" onclick="showLogin()">← Back to login</span>
+        </div>
+      </div>
+
+      <!-- Unverified Email -->
+      <div id="unverifiedView" style="display:none">
+        <h2 style="margin-bottom:16px">Verify your email</h2>
+        <p style="color:var(--text-secondary);margin-bottom:24px;max-width:400px;margin-left:auto;margin-right:auto">
+          Your email is not verified. Check your inbox or click below to resend the verification link.
+        </p>
+        <div id="unverifiedAlert" class="alert info login-alert" style="display:none"></div>
+        <div style="max-width:400px;margin:0 auto">
+          <button class="btn btn-primary" id="resendBtn" style="width:100%" onclick="resendVerification()">Resend Verification</button>
+          <span class="back-link" onclick="showLogin()">← Back to login</span>
+        </div>
       </div>
     </div>
     
@@ -171,7 +246,42 @@
           <div class="api-key-actions">
             <button class="btn-icon" onclick="copyApiKey()" title="Copy">📋</button>
             <button class="btn-icon" onclick="toggleKeyVisibility()" id="eyeBtn" title="Show/Hide">👁️</button>
+            <button class="btn-icon" onclick="resetApiKey()" title="Reset API Key" style="color:var(--error)">🔄</button>
           </div>
+        </div>
+      </div>
+
+      <!-- Available Models & Combos -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-header">
+          <div class="card-title">Available Models & Combos</div>
+          <button class="btn btn-small" onclick="loadModelsCombos()">Refresh</button>
+        </div>
+        <div id="modelsCombosList" style="display:flex;flex-wrap:wrap;gap:8px">
+          <span style="color:var(--text-muted)">Loading...</span>
+        </div>
+        <p style="color:var(--text-muted);font-size:12px;margin-top:12px">
+          Use any model or combo name as the <code style="color:var(--accent)">model</code> field in your API requests.
+          Combos automatically fallback across multiple models.
+        </p>
+      </div>
+
+      <!-- RTK Token Saver -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-header">
+          <div class="card-title">Token Saver (RTK)</div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <p style="color:var(--text-secondary);font-size:14px">Automatically compress tool outputs (git diff, grep, ls...) to save 20-40% input tokens.</p>
+            <p id="rtkStatus" style="font-size:13px;margin-top:4px"></p>
+          </div>
+          <label style="position:relative;display:inline-block;width:48px;height:26px;cursor:pointer">
+            <input type="checkbox" id="rtkToggle" onchange="toggleRTK()" style="opacity:0;width:0;height:0">
+            <span id="rtkSlider" style="position:absolute;top:0;left:0;right:0;bottom:0;background:var(--bg-input);border-radius:13px;transition:0.3s;border:1px solid var(--border)">
+              <span id="rtkKnob" style="position:absolute;left:3px;top:2px;width:20px;height:20px;background:var(--text-muted);border-radius:50%;transition:0.3s"></span>
+            </span>
+          </label>
         </div>
       </div>
       
@@ -225,6 +335,88 @@
           <div style="color:var(--text-muted);text-align:center;padding:20px">No usage data yet</div>
         </div>
       </div>
+
+      <!-- Token Analytics -->
+      <div class="card" style="margin-top:24px">
+        <div class="card-header">
+          <div class="card-title">Token Analytics</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn time-btn" onclick="setAnalyticsGranularity('hour')" data-granularity="hour">Hour</button>
+            <button class="btn time-btn active" onclick="setAnalyticsGranularity('day')" data-granularity="day">Day</button>
+            <button class="btn time-btn" onclick="setAnalyticsGranularity('week')" data-granularity="week">Week</button>
+            <button class="btn time-btn" onclick="setAnalyticsGranularity('month')" data-granularity="month">Month</button>
+          </div>
+        </div>
+        <div class="grid-3" style="margin-bottom:0">
+          <div class="card" style="padding:20px;border:none">
+            <div class="card-header"><div class="card-title">Token Composition</div></div>
+            <div class="chart-container"><canvas id="tokenCompositionChart"></canvas></div>
+          </div>
+          <div class="card" style="padding:20px;border:none">
+            <div class="card-header"><div class="card-title">Token Trend</div></div>
+            <div class="chart-container"><canvas id="tokenTrendChart"></canvas></div>
+          </div>
+          <div class="card" style="padding:20px;border:none">
+            <div class="card-header"><div class="card-title">Model Breakdown</div></div>
+            <div class="chart-container"><canvas id="analyticsModelChart"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Billing & Transactions -->
+      <div class="card" style="margin-top:24px">
+        <div class="card-header">
+          <div class="card-title">Billing &amp; Transactions</div>
+          <button class="btn btn-small" onclick="viewFullStatement()">View Full Statement</button>
+        </div>
+        <div class="section-subtitle">Current Month Summary</div>
+        <div class="billing-stats">
+          <div class="billing-stat">
+            <div class="billing-stat-label">Opening Balance</div>
+            <div class="billing-stat-value" id="bsOpeningBalance">$0.00</div>
+          </div>
+          <div class="billing-stat">
+            <div class="billing-stat-label">Total Top-ups</div>
+            <div class="billing-stat-value" id="bsTotalTopups" style="color:var(--success)">$0.00</div>
+          </div>
+          <div class="billing-stat">
+            <div class="billing-stat-label">Total Consumption</div>
+            <div class="billing-stat-value" id="bsTotalConsumption" style="color:var(--accent)">$0.00</div>
+          </div>
+          <div class="billing-stat">
+            <div class="billing-stat-label">Closing Balance</div>
+            <div class="billing-stat-value" id="bsClosingBalance">$0.00</div>
+          </div>
+        </div>
+        <div class="section-subtitle">Recent Transactions</div>
+        <div class="scroll-area">
+          <table class="txn-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Model</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody id="transactionsBody">
+              <tr><td colspan="5" class="txn-empty">Loading transactions...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Full Statement Modal -->
+      <div class="modal-overlay" id="statementModal" onclick="if(event.target===this)closeStatementModal()">
+        <div class="modal" style="max-width:640px">
+          <h2>Billing Statement <span id="statementPeriod" style="color:var(--text-secondary);font-size:14px;font-weight:400"></span></h2>
+          <div id="statementContent" style="color:var(--text-secondary);font-size:14px;line-height:1.6">Loading...</div>
+          <div class="modal-actions">
+            <button class="btn btn-primary" onclick="closeStatementModal()">Close</button>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
   
@@ -233,19 +425,13 @@
     <div class="modal">
       <h2>Add Funds</h2>
       <div id="topupAlert" class="alert success"></div>
-      <div class="form-group">
-        <label>Amount (USD)</label>
-        <input type="number" id="topupAmount" placeholder="10.00" min="1" step="0.01" value="10">
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:16px">
-        <button class="btn btn-small" onclick="setTopupAmount(10)">$10</button>
-        <button class="btn btn-small" onclick="setTopupAmount(25)">$25</button>
-        <button class="btn btn-small" onclick="setTopupAmount(50)">$50</button>
-        <button class="btn btn-small" onclick="setTopupAmount(100)">$100</button>
-      </div>
+      <p style="color:var(--text-secondary);font-size:14px;line-height:1.6;margin-bottom:16px">
+        Online self-service top-up is coming soon. To add credits to your account, please contact
+        <a href="mailto:support@silkgateway.ai" style="color:var(--accent)">support@silkgateway.ai</a>
+        with your API key and desired amount. Payments will be processed securely once Stripe integration is live.
+      </p>
       <div class="modal-actions">
-        <button class="btn" onclick="closeTopupModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="processTopup()">Add $<span id="topupDisplay">10</span></button>
+        <button class="btn btn-primary" onclick="closeTopupModal()">Got it</button>
       </div>
     </div>
   </div>
@@ -264,24 +450,206 @@
   <script>
     const API_BASE = 'https://api.silkgateway.ai';
     let apiKey = localStorage.getItem('silkApiKey') || '';
+    let jwtToken = localStorage.getItem('silkJWT') || '';
     let keyVisible = false;
     let charts = {};
     let currentTimePeriod = 'week';
+    let analyticsGranularity = 'day';
     
-    document.addEventListener('DOMContentLoaded', () => {
-      if (apiKey) {
-        showDashboard();
-      } else {
-        document.getElementById('loginPrompt').style.display = 'block';
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 优先检查 JWT
+      if (jwtToken) {
+        const valid = await tryJWTLogin();
+        if (valid) return;
       }
+      // 降级:检查 API Key (向后兼容)
+      if (apiKey) {
+        const valid = await tryApiKeyLogin();
+        if (valid) return;
+      }
+      // 都无效,显示登录
+      showLogin();
     });
-    
-    function loginWithKey() {
-      const key = document.getElementById('loginApiKey').value.trim();
-      if (!key) return;
-      apiKey = key;
-      localStorage.setItem('silkApiKey', key);
-      showDashboard();
+
+    function showLogin() {
+      document.getElementById('loginPrompt').style.display = 'block';
+      document.getElementById('dashboardContent').style.display = 'none';
+      document.getElementById('userMenu').style.display = 'none';
+      showLoginView();
+    }
+
+    function showLoginView() {
+      document.getElementById('loginView').style.display = 'block';
+      document.getElementById('forgotView').style.display = 'none';
+      document.getElementById('unverifiedView').style.display = 'none';
+    }
+
+    function showForgotPassword() {
+      document.getElementById('loginView').style.display = 'none';
+      document.getElementById('forgotView').style.display = 'block';
+    }
+
+    async function tryJWTLogin() {
+      try {
+        const res = await fetch(`${API_BASE}/api/user`, { headers: { 'Authorization': `Bearer ${jwtToken}` } });
+        if (!res.ok) { localStorage.removeItem('silkJWT'); jwtToken = ''; return false; }
+        const data = await res.json();
+        // JWT 认证成功,保存 apiKey 供图表 API 使用
+        if (data.apiKey) { apiKey = data.apiKey; localStorage.setItem('silkApiKey', apiKey); }
+        updateUserInfo(data);
+        await showDashboard();
+        return true;
+      } catch { return false; }
+    }
+
+    async function tryApiKeyLogin() {
+      try {
+        const res = await fetch(`${API_BASE}/api/user`, { headers: { 'Authorization': `Bearer ${apiKey}` } });
+        if (!res.ok) { localStorage.removeItem('silkApiKey'); apiKey = ''; return false; }
+        const data = await res.json();
+        updateUserInfo(data);
+        await showDashboard();
+        return true;
+      } catch { return false; }
+    }
+
+    function updateUserInfo(data) {
+      document.getElementById('userEmail').textContent = data.email || 'User';
+      document.getElementById('userAvatar').textContent = (data.firstName || 'U')[0].toUpperCase();
+      document.getElementById('userMenu').style.display = 'flex';
+    }
+
+    async function loginWithCredentials() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      if (!email || !password) return;
+
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true; btn.textContent = 'Logging in...';
+      document.getElementById('loginAlert').style.display = 'none';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          if (data.needsVerification) {
+            document.getElementById('loginView').style.display = 'none';
+            document.getElementById('unverifiedView').style.display = 'block';
+            document.getElementById('unverifiedView').dataset.email = email;
+          } else {
+            const alert = document.getElementById('loginAlert');
+            alert.textContent = data.error || 'Login failed';
+            alert.style.display = 'block';
+          }
+          return;
+        }
+
+        // 登录成功
+        jwtToken = data.token;
+        localStorage.setItem('silkJWT', jwtToken);
+        updateUserInfo(data.user);
+
+        // 用 JWT 获取 apiKey (供图表 API 使用)
+        try {
+          const userRes = await fetch(`${API_BASE}/api/user`, { headers: { 'Authorization': `Bearer ${jwtToken}` } });
+          if (userRes.ok) {
+            const userData = await userRes.json();
+            if (userData.apiKey) { apiKey = userData.apiKey; localStorage.setItem('silkApiKey', apiKey); }
+          }
+        } catch {}
+
+        await showDashboard();
+      } catch (err) {
+        const alert = document.getElementById('loginAlert');
+        alert.textContent = 'Network error. Please try again.';
+        alert.style.display = 'block';
+      } finally {
+        btn.disabled = false; btn.textContent = 'Login';
+      }
+    }
+
+    async function submitForgotPassword() {
+      const email = document.getElementById('forgotEmail').value.trim();
+      if (!email) return;
+      const btn = document.getElementById('forgotBtn');
+      btn.disabled = true; btn.textContent = 'Sending...';
+      try {
+        const res = await fetch(`${API_BASE}/api/forgot-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        const alert = document.getElementById('forgotAlert');
+        alert.textContent = data.message || 'Reset link sent if email exists.';
+        alert.style.display = 'block';
+      } catch {
+        const alert = document.getElementById('forgotAlert');
+        alert.textContent = 'Network error.';
+        alert.style.display = 'block';
+      } finally {
+        btn.disabled = false; btn.textContent = 'Send Reset Link';
+      }
+    }
+
+    async function resendVerification() {
+      const email = document.getElementById('unverifiedView').dataset.email || document.getElementById('loginEmail').value.trim();
+      if (!email) return;
+      const btn = document.getElementById('resendBtn');
+      btn.disabled = true; btn.textContent = 'Sending...';
+      try {
+        const res = await fetch(`${API_BASE}/api/resend-verification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        const alert = document.getElementById('unverifiedAlert');
+        alert.textContent = data.message || data.error || 'Sent.';
+        alert.style.display = 'block';
+      } finally {
+        btn.disabled = false; btn.textContent = 'Resend Verification';
+      }
+    }
+
+    async function logout() {
+      try {
+        await fetch(`${API_BASE}/api/logout`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${jwtToken}` },
+        });
+      } catch {}
+      localStorage.removeItem('silkJWT');
+      localStorage.removeItem('silkApiKey');
+      jwtToken = ''; apiKey = '';
+      location.reload();
+    }
+
+    async function resetApiKey() {
+      if (!jwtToken) { alert('Please log in to reset your API key.'); return; }
+      if (!confirm('Are you sure? Your current API key will stop working immediately.')) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/reset-api-key`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${jwtToken}` },
+        });
+        const data = await res.json();
+        if (res.ok) {
+          apiKey = data.apiKey;
+          localStorage.setItem('silkApiKey', apiKey);
+          document.getElementById('apiKeyDisplay').textContent = apiKey;
+          keyVisible = true;
+          document.getElementById('eyeBtn').textContent = '🙈';
+          alert('API key reset! Old key is no longer valid. Save the new key now.');
+        } else {
+          alert(data.error || 'Failed to reset API key');
+        }
+      } catch (err) { alert('Network error'); }
     }
     
     async function showDashboard() {
@@ -289,21 +657,108 @@
       document.getElementById('dashboardContent').style.display = 'block';
       await Promise.all([loadUserInfo(), loadBalance(), loadBilling()]);
       await loadAllCharts();
+      loadModelsCombos();
+      loadRTKStatus();
+      loadAnalytics('day');
+      loadBillingStatement();
+      loadTransactions();
+    }
+
+    async function loadModelsCombos() {
+      try {
+        const [modelsRes, combosRes] = await Promise.all([
+          fetch(`${API_BASE}/v1/models`),
+          fetch(`${API_BASE}/v1/combos`),
+        ]);
+        const modelsData = await modelsRes.json();
+        const combosData = await combosRes.json();
+
+        let html = '';
+        // Combos first
+        if (combosData.combos && combosData.combos.length > 0) {
+          for (const c of combosData.combos) {
+            html += `<span style="padding:6px 12px;background:rgba(201,168,76,0.15);border:1px solid var(--accent);border-radius:6px;font-size:13px;color:var(--accent);cursor:help" title="${c.models.join(' → ')}">⚡ ${c.name}</span>`;
+          }
+        }
+        // Models
+        if (modelsData.data) {
+          for (const m of modelsData.data) {
+            html += `<span style="padding:6px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text-secondary)">${m.id}</span>`;
+          }
+        }
+        document.getElementById('modelsCombosList').innerHTML = html || '<span style="color:var(--text-muted)">No models available</span>';
+      } catch (err) {
+        console.error('Failed to load models/combos:', err);
+      }
+    }
+
+    function loadRTKStatus() {
+      // 默认启用;实际状态从用户 keyInfo 读取(loadUserInfo 中设置)
+      const enabled = localStorage.getItem('silkRTK') !== 'off';
+      updateRTKToggle(enabled);
+    }
+
+    function updateRTKToggle(enabled) {
+      const toggle = document.getElementById('rtkToggle');
+      const knob = document.getElementById('rtkKnob');
+      const slider = document.getElementById('rtkSlider');
+      const status = document.getElementById('rtkStatus');
+      toggle.checked = enabled;
+      if (enabled) {
+        knob.style.left = '25px';
+        knob.style.background = 'var(--accent)';
+        slider.style.background = 'rgba(201,168,76,0.2)';
+        slider.style.borderColor = 'var(--accent)';
+        status.style.color = 'var(--green)';
+        status.textContent = '✅ Active - tool outputs will be compressed';
+      } else {
+        knob.style.left = '3px';
+        knob.style.background = 'var(--text-muted)';
+        slider.style.background = 'var(--bg-input)';
+        slider.style.borderColor = 'var(--border)';
+        status.style.color = 'var(--text-muted)';
+        status.textContent = '⏸️ Disabled';
+      }
+    }
+
+    function toggleRTK() {
+      const enabled = document.getElementById('rtkToggle').checked;
+      localStorage.setItem('silkRTK', enabled ? 'on' : 'off');
+      updateRTKToggle(enabled);
+      // 提示用户:RTK 也可通过请求头 X-RTK: off 单次关闭
+      const status = document.getElementById('rtkStatus');
+      status.textContent = enabled
+        ? '✅ Active - tool outputs will be compressed (send X-RTK: off to disable per-request)'
+        : '⏸️ Disabled (send X-RTK: on to enable per-request)';
     }
     
     function setTimePeriod(period) {
       currentTimePeriod = period;
-      document.querySelectorAll('.time-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.period === period));
+      document.querySelectorAll('.time-btn[data-period]').forEach(btn => btn.classList.toggle('active', btn.dataset.period === period));
       loadAllCharts();
+    }
+
+    function setAnalyticsGranularity(granularity) {
+      analyticsGranularity = granularity;
+      document.querySelectorAll('.time-btn[data-granularity]').forEach(btn => btn.classList.toggle('active', btn.dataset.granularity === granularity));
+      loadAnalytics(granularity);
     }
     
     async function loadUserInfo() {
       try {
-        const res = await fetch(`${API_BASE}/api/user`, { headers: { 'Authorization': `Bearer ${apiKey}` } });
+        // 优先用 JWT,降级用 API Key
+        const token = jwtToken || apiKey;
+        const res = await fetch(`${API_BASE}/api/user`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (res.ok) {
           const data = await res.json();
           document.getElementById('userEmail').textContent = data.email || 'User';
           document.getElementById('userAvatar').textContent = (data.firstName || 'U')[0].toUpperCase();
+          document.getElementById('userMenu').style.display = 'flex';
+          // JWT 模式下会返回 apiKey,更新本地存储
+          if (data.apiKey && data.apiKey !== apiKey) {
+            apiKey = data.apiKey;
+            localStorage.setItem('silkApiKey', apiKey);
+          }
         }
       } catch (err) { console.error('Failed to load user info:', err); }
     }
@@ -450,22 +905,231 @@
     function toggleKeyVisibility() { keyVisible = !keyVisible; document.getElementById('apiKeyDisplay').textContent = keyVisible ? apiKey : 'sk-••••••••••••'; document.getElementById('eyeBtn').textContent = keyVisible ? '🙈' : '👁️'; }
     function showTopupModal(e) { e?.preventDefault(); document.getElementById('topupModal').classList.add('active'); }
     function closeTopupModal() { document.getElementById('topupModal').classList.remove('active'); document.getElementById('topupAlert').style.display = 'none'; }
-    function setTopupAmount(amount) { document.getElementById('topupAmount').value = amount; document.getElementById('topupDisplay').textContent = amount; }
-    
-    async function processTopup() {
-      const amount = parseFloat(document.getElementById('topupAmount').value);
-      if (!amount || amount <= 0) return;
+
+    // ============================================================
+    // Token Analytics
+    // ============================================================
+
+    async function loadAnalytics(granularity) {
       try {
-        const res = await fetch(`${API_BASE}/v1/topup`, { method: 'POST', headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ amount }) });
-        if (res.ok) {
-          const data = await res.json();
-          document.getElementById('topupAlert').textContent = `Successfully added $${amount}. New balance: $${data.balance.toFixed(2)}`;
-          document.getElementById('topupAlert').style.display = 'block';
-          await loadBalance();
-          setTimeout(closeTopupModal, 2000);
+        const [noneRes, modelRes] = await Promise.all([
+          fetch(`${API_BASE}/v1/usage/timeseries?granularity=${granularity}&period=week&group_by=none`, { headers: { 'Authorization': `Bearer ${apiKey}` } }),
+          fetch(`${API_BASE}/v1/usage/timeseries?granularity=${granularity}&period=week&group_by=model`, { headers: { 'Authorization': `Bearer ${apiKey}` } }),
+        ]);
+        const noneData = noneRes.ok ? await noneRes.json() : null;
+        const modelData = modelRes.ok ? await modelRes.json() : null;
+        if (noneData) {
+          renderTokenComposition(noneData.summary || {});
+          renderTokenTrend(noneData.series || []);
         }
-      } catch (err) { console.error('Topup failed:', err); }
+        if (modelData) {
+          renderAnalyticsModel(modelData.series || []);
+        }
+      } catch (err) { console.error('Failed to load analytics:', err); }
     }
+
+    function renderTokenComposition(summary) {
+      const ctx = document.getElementById('tokenCompositionChart').getContext('2d');
+      if (charts.tokenComposition) charts.tokenComposition.destroy();
+      const input = summary.total_input_tokens || 0;
+      const output = summary.total_output_tokens || 0;
+      const cacheRead = summary.total_cache_read_tokens || 0;
+      const cacheWrite = summary.total_cache_write_tokens || 0;
+      const hasData = (input + output + cacheRead + cacheWrite) > 0;
+      const data = hasData ? [input, output, cacheRead, cacheWrite] : [1, 1, 1, 1];
+      charts.tokenComposition = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Input', 'Output', 'Cache Read', 'Cache Write'],
+          datasets: [{
+            data,
+            backgroundColor: ['rgba(201,168,76,0.8)', 'rgba(96,165,250,0.8)', 'rgba(74,222,128,0.8)', 'rgba(192,132,252,0.8)'],
+            borderColor: ['#c9a84c', '#60a5fa', '#4ade80', '#c084fc'],
+            borderWidth: 2,
+          }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#8b8b9a', padding: 12, font: { size: 12 } } },
+            tooltip: { callbacks: { label: ctx => hasData ? `${ctx.label}: ${formatTokens(ctx.raw)} tokens` : `${ctx.label}: 0 tokens` } },
+          },
+          cutout: '60%',
+        },
+      });
+    }
+
+    function renderTokenTrend(series) {
+      const ctx = document.getElementById('tokenTrendChart').getContext('2d');
+      if (charts.tokenTrend) charts.tokenTrend.destroy();
+      const labels = series.map(s => s.label);
+      const data = series.map(s => s.total_tokens || 0);
+      charts.tokenTrend = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Total Tokens',
+            data,
+            borderColor: '#c9a84c',
+            backgroundColor: 'rgba(201,168,76,0.15)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointBackgroundColor: '#c9a84c',
+          }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => formatTokens(ctx.raw) + ' tokens' } } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#5a5a6e', maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#c9a84c', callback: v => formatTokens(v) } },
+          },
+        },
+      });
+    }
+
+    function renderAnalyticsModel(series) {
+      const ctx = document.getElementById('analyticsModelChart').getContext('2d');
+      if (charts.analyticsModel) charts.analyticsModel.destroy();
+      // group_by=model: each bucket carries groups: { [model]: { tokens, ... } }. Aggregate across all buckets.
+      const totals = {};
+      for (const s of series) {
+        const groups = s.groups || {};
+        for (const [model, g] of Object.entries(groups)) {
+          totals[model] = (totals[model] || 0) + (g.tokens || 0);
+        }
+      }
+      const entries = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+      const labels = entries.map(e => e[0]);
+      const data = entries.map(e => e[1]);
+      const palette = ['rgba(201,168,76,0.7)', 'rgba(96,165,250,0.7)', 'rgba(74,222,128,0.7)', 'rgba(192,132,252,0.7)', 'rgba(251,146,60,0.7)', 'rgba(248,113,113,0.7)', 'rgba(45,212,191,0.7)'];
+      const borderPalette = ['#c9a84c', '#60a5fa', '#4ade80', '#c084fc', '#fb923c', '#f87171', '#2dd4bf'];
+      charts.analyticsModel = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Tokens',
+            data,
+            backgroundColor: data.map((_, i) => palette[i % palette.length]),
+            borderColor: data.map((_, i) => borderPalette[i % borderPalette.length]),
+            borderWidth: 1,
+          }],
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => formatTokens(ctx.raw) + ' tokens' } } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#5a5a6e', callback: v => formatTokens(v) } },
+            y: { grid: { display: false }, ticks: { color: '#8b8b9a', font: { size: 11 } } },
+          },
+        },
+      });
+    }
+
+    // ============================================================
+    // Billing & Transactions
+    // ============================================================
+
+    async function loadBillingStatement() {
+      try {
+        const month = new Date().toISOString().slice(0, 7);
+        const res = await fetch(`${API_BASE}/v1/billing/statement?month=${month}`, { headers: { 'Authorization': `Bearer ${apiKey}` } });
+        if (!res.ok) return;
+        const data = await res.json();
+        const totalTopups = (data.topups || []).reduce((s, t) => s + (t.amount || 0), 0);
+        const totalConsumption = (data.consumption && data.consumption.total_cost) || 0;
+        document.getElementById('bsOpeningBalance').textContent = `$${(data.opening_balance || 0).toFixed(2)}`;
+        document.getElementById('bsTotalTopups').textContent = `$${totalTopups.toFixed(2)}`;
+        document.getElementById('bsTotalConsumption').textContent = `$${totalConsumption.toFixed(4)}`;
+        document.getElementById('bsClosingBalance').textContent = `$${(data.closing_balance || 0).toFixed(2)}`;
+      } catch (err) { console.error('Failed to load billing statement:', err); }
+    }
+
+    async function loadTransactions() {
+      const body = document.getElementById('transactionsBody');
+      try {
+        const res = await fetch(`${API_BASE}/v1/transactions?days=30`, { headers: { 'Authorization': `Bearer ${apiKey}` } });
+        if (!res.ok) { body.innerHTML = '<tr><td colspan="5" class="txn-empty">Failed to load transactions</td></tr>'; return; }
+        const data = await res.json();
+        const txns = (data.transactions || []).slice(0, 20);
+        if (txns.length === 0) {
+          body.innerHTML = '<tr><td colspan="5" class="txn-empty">No transactions in the last 30 days</td></tr>';
+          return;
+        }
+        body.innerHTML = txns.map(t => {
+          const time = (t.timestamp || '').slice(5, 16).replace('T', ' ');
+          const isTopup = t.type === 'topup';
+          const badge = isTopup ? '<span class="badge badge-topup">topup</span>' : '<span class="badge badge-consumption">consumption</span>';
+          const amount = (t.amount || 0);
+          const amountStr = amount >= 0
+            ? `<span style="color:var(--success)">+$${amount.toFixed(2)}</span>`
+            : `<span style="color:var(--error)">-$${Math.abs(amount).toFixed(4)}</span>`;
+          const model = t.model ? `<span style="font-family:'JetBrains Mono',monospace;font-size:12px">${t.model}</span>` : '<span style="color:var(--text-muted)">—</span>';
+          const desc = (t.description || '').slice(0, 60) || '—';
+          return `<tr><td style="font-family:'JetBrains Mono',monospace;font-size:12px">${time}</td><td>${badge}</td><td>${amountStr}</td><td>${model}</td><td style="color:var(--text-secondary)">${desc}</td></tr>`;
+        }).join('');
+      } catch (err) {
+        console.error('Failed to load transactions:', err);
+        body.innerHTML = '<tr><td colspan="5" class="txn-empty">Failed to load transactions</td></tr>';
+      }
+    }
+
+    async function viewFullStatement() {
+      const modal = document.getElementById('statementModal');
+      const content = document.getElementById('statementContent');
+      const periodEl = document.getElementById('statementPeriod');
+      modal.classList.add('active');
+      content.textContent = 'Loading...';
+      try {
+        const month = new Date().toISOString().slice(0, 7);
+        const res = await fetch(`${API_BASE}/v1/billing/statement?month=${month}`, { headers: { 'Authorization': `Bearer ${apiKey}` } });
+        if (!res.ok) { content.textContent = 'Failed to load statement.'; return; }
+        const data = await res.json();
+        periodEl.textContent = `(${data.period || month})`;
+        const topups = data.topups || [];
+        const totalTopups = topups.reduce((s, t) => s + (t.amount || 0), 0);
+        const byModel = (data.consumption && data.consumption.by_model) || [];
+        const totalConsumption = (data.consumption && data.consumption.total_cost) || 0;
+        let html = `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+            <div class="billing-stat"><div class="billing-stat-label">Opening Balance</div><div class="billing-stat-value">$${(data.opening_balance || 0).toFixed(2)}</div></div>
+            <div class="billing-stat"><div class="billing-stat-label">Closing Balance</div><div class="billing-stat-value">$${(data.closing_balance || 0).toFixed(2)}</div></div>
+            <div class="billing-stat"><div class="billing-stat-label">Total Top-ups</div><div class="billing-stat-value" style="color:var(--success)">$${totalTopups.toFixed(2)}</div></div>
+            <div class="billing-stat"><div class="billing-stat-label">Total Consumption</div><div class="billing-stat-value" style="color:var(--accent)">$${totalConsumption.toFixed(4)}</div></div>
+          </div>
+          <div class="card-title" style="margin-bottom:10px">Top-ups (${topups.length})</div>`;
+        if (topups.length === 0) {
+          html += '<p style="color:var(--text-muted);margin-bottom:20px">No top-ups this month.</p>';
+        } else {
+          html += '<div class="scroll-area" style="max-height:140px;margin-bottom:20px"><table class="txn-table"><thead><tr><th>Time</th><th>Amount</th><th>Description</th></tr></thead><tbody>';
+          for (const t of topups) {
+            html += `<tr><td style="font-family:'JetBrains Mono',monospace;font-size:12px">${(t.timestamp || '').slice(0, 16).replace('T', ' ')}</td><td style="color:var(--success)">+$${(t.amount || 0).toFixed(2)}</td><td style="color:var(--text-secondary)">${t.description || '—'}</td></tr>`;
+          }
+          html += '</tbody></table></div>';
+        }
+        html += `<div class="card-title" style="margin-bottom:10px">Consumption by Model (${byModel.length})</div>`;
+        if (byModel.length === 0) {
+          html += '<p style="color:var(--text-muted)">No consumption this month.</p>';
+        } else {
+          html += '<div class="scroll-area" style="max-height:200px"><table class="txn-table"><thead><tr><th>Model</th><th>Requests</th><th>Input</th><th>Output</th><th>Cost</th></tr></thead><tbody>';
+          for (const m of byModel) {
+            html += `<tr><td style="font-family:'JetBrains Mono',monospace;font-size:12px">${m.model || 'unknown'}</td><td>${(m.requests || 0).toLocaleString()}</td><td>${formatTokens(m.input_tokens || 0)}</td><td>${formatTokens(m.output_tokens || 0)}</td><td style="color:var(--accent)">$${(m.cost || 0).toFixed(4)}</td></tr>`;
+          }
+          html += '</tbody></table></div>';
+        }
+        html += `<p style="color:var(--text-muted);font-size:12px;margin-top:12px">Total transactions: ${data.transactions_count || 0}</p>`;
+        content.innerHTML = html;
+      } catch (err) {
+        console.error('Failed to load full statement:', err);
+        content.textContent = 'Failed to load statement.';
+      }
+    }
+
+    function closeStatementModal() { document.getElementById('statementModal').classList.remove('active'); }
   </script>
 </body>
 </html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Password - SilkGateway</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a0f; --bg-card: #12121a; --bg-input: #16161f;
+      --text: #e8e8ed; --text-secondary: #8b8b9a; --text-muted: #5a5a6e;
+      --accent: #c9a84c; --accent-hover: #d4af37;
+      --border: rgba(255,255,255,0.08); --success: #4ade80; --error: #f87171;
+    }
+    body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .reset-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 40px; max-width: 440px; width: 100%; }
+    .logo { text-align: center; margin-bottom: 32px; }
+    .logo-icon { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: linear-gradient(135deg, var(--accent), #d4af37); border-radius: 12px; font-weight: 700; font-size: 24px; color: #0a0a0f; margin-bottom: 12px; }
+    .logo-text { font-weight: 600; font-size: 20px; }
+    .logo-text span { color: var(--accent); }
+    h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; text-align: center; }
+    .subtitle { color: var(--text-secondary); font-size: 14px; text-align: center; margin-bottom: 32px; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+    input { width: 100%; padding: 14px 16px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 15px; outline: none; transition: border-color 0.2s; }
+    input:focus { border-color: var(--accent); }
+    .btn { width: 100%; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; border: none; transition: all 0.2s; }
+    .btn-primary { background: var(--accent); color: #0a0a0f; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .alert { padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 20px; display: none; }
+    .alert.error { background: rgba(248,113,113,0.1); color: var(--error); border: 1px solid rgba(248,113,113,0.2); }
+    .alert.success { background: rgba(74,222,128,0.1); color: var(--success); border: 1px solid rgba(74,222,128,0.2); }
+    .password-hint { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+    .success-state { text-align: center; display: none; }
+    .success-icon { font-size: 48px; margin-bottom: 16px; }
+    .footer-link { text-align: center; margin-top: 24px; }
+    .footer-link a { color: var(--accent); text-decoration: none; font-size: 14px; }
+    .footer-link a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="reset-card">
+    <div class="logo">
+      <div class="logo-icon">S</div>
+      <div class="logo-text">Silk<span>Gateway</span></div>
+    </div>
+
+    <!-- Reset Form -->
+    <div id="resetForm">
+      <h1>Reset Password</h1>
+      <p class="subtitle">Enter your new password below</p>
+
+      <div class="alert error" id="errorAlert"></div>
+
+      <form onsubmit="submitReset(event)">
+        <div class="form-group">
+          <label for="password">New Password</label>
+          <input type="password" id="password" placeholder="At least 8 characters" required minlength="8">
+          <div class="password-hint">Must be at least 8 characters with letters and numbers</div>
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword" placeholder="Re-enter password" required>
+        </div>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Reset Password</button>
+      </form>
+    </div>
+
+    <!-- Success State -->
+    <div id="successState" class="success-state">
+      <div class="success-icon">✅</div>
+      <h1>Password Reset!</h1>
+      <p class="subtitle">Your password has been changed successfully. You can now log in with your new password.</p>
+      <a href="/dashboard/" class="btn btn-primary" style="display:block;text-decoration:none;text-align:center;margin-top:24px">Go to Login</a>
+    </div>
+
+    <!-- Invalid Token State -->
+    <div id="invalidState" class="success-state">
+      <div class="success-icon">❌</div>
+      <h1>Invalid Link</h1>
+      <p class="subtitle">This password reset link is invalid or has expired. Please request a new one.</p>
+      <a href="/dashboard/" class="btn btn-primary" style="display:block;text-decoration:none;text-align:center;margin-top:24px">Back to Dashboard</a>
+    </div>
+
+    <div class="footer-link">
+      <a href="/dashboard/">← Back to Dashboard</a>
+    </div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const resetToken = urlParams.get('token');
+
+    if (!resetToken) {
+      document.getElementById('resetForm').style.display = 'none';
+      document.getElementById('invalidState').style.display = 'block';
+    }
+
+    function showAlert(msg) {
+      const alert = document.getElementById('errorAlert');
+      alert.textContent = msg;
+      alert.style.display = 'block';
+    }
+
+    async function submitReset(e) {
+      e.preventDefault();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (password !== confirmPassword) {
+        showAlert('Passwords do not match');
+        return;
+      }
+      if (password.length < 8) {
+        showAlert('Password must be at least 8 characters');
+        return;
+      }
+      if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+        showAlert('Password must contain letters and numbers');
+        return;
+      }
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Resetting...';
+
+      try {
+        const res = await fetch('/api/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: resetToken, newPassword: password }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Reset failed');
+        }
+
+        document.getElementById('resetForm').style.display = 'none';
+        document.getElementById('successState').style.display = 'block';
+      } catch (err) {
+        showAlert(err.message);
+        btn.disabled = false;
+        btn.textContent = 'Reset Password';
+      }
+    }
+  </script>
+</body>
+</html>

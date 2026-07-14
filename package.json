@@ -1,0 +1,11 @@
+{
+  "name": "silk-gateway",
+  "version": "2.0.0",
+  "description": "AI Tokens Global Relay - Cloudflare Workers AI API Gateway",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node tests/run-all.js"
+  },
+  "license": "MIT"
+}
